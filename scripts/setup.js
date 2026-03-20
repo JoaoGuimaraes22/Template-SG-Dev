@@ -271,11 +271,24 @@ async function setupBusiness(rl) {
   console.log("\n─── Business Site — Feature Selection ─────────────────────────\n");
 
   const features = {
-    i18n: await ask(rl, "[1/4] Include i18n (bilingual /en /pt routing)?"),
-    contactForm: await ask(rl, "[2/4] Include contact form (Resend email on submit)?"),
-    floatingCTA: await ask(rl, "[3/4] Include FloatingCTA bar (sticky mobile bottom bar)?"),
-    whatsapp: await ask(rl, "[4/4] Include WhatsApp button in contact section?"),
+    i18n: await ask(rl, "[1/5] Include i18n (bilingual /en /pt routing)?"),
+    contactForm: await ask(rl, "[2/5] Include contact form (Resend email on submit)?"),
+    floatingCTA: await ask(rl, "[3/5] Include FloatingCTA bar (sticky mobile bottom bar)?"),
+    whatsapp: await ask(rl, "[4/5] Include WhatsApp button in contact section?"),
   };
+
+  const colorChoice = await askChoice(rl, "[5/5] Brand accent color?", [
+    "Indigo   (default)",
+    "Blue",
+    "Violet",
+    "Rose",
+    "Amber",
+    "Emerald",
+    "Cyan",
+    "Orange",
+  ]);
+  const COLOR_MAP = ["indigo", "blue", "violet", "rose", "amber", "emerald", "cyan", "orange"];
+  const accentColor = COLOR_MAP[colorChoice - 1];
 
   copyTemplateToProject("business");
 
@@ -327,6 +340,28 @@ async function setupBusiness(rl) {
   } else {
     console.log("✓  FloatingCTA: enabled");
   }
+
+  // ── Accent color replacement ──────────────────────────────────────────────
+  if (accentColor !== "indigo") {
+    console.log(`\n─── Replacing accent color: indigo → ${accentColor} ──────────────────\n`);
+    const colorFiles = [
+      "app/[locale]/layout.tsx",
+      "app/[locale]/components/About.tsx",
+      "app/[locale]/components/Contact.tsx",
+      "app/[locale]/components/FAQ.tsx",
+      "app/[locale]/components/FloatingCTA.tsx",
+      "app/[locale]/components/HeroContent.tsx",
+      "app/[locale]/components/LanguageSwitcher.tsx",
+      "app/[locale]/components/Navbar.tsx",
+      "app/[locale]/components/Reviews.tsx",
+      "app/[locale]/components/ScrollProgress.tsx",
+      "app/[locale]/components/Services.tsx",
+    ];
+    for (const f of colorFiles) {
+      replaceInFile(f, "indigo-", `${accentColor}-`);
+    }
+  }
+  console.log(`✓  Accent color: ${accentColor}`);
 
   return { type: "business", features };
 }

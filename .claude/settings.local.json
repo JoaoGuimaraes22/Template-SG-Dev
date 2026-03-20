@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node scripts/validate.js)",
+      "Bash(echo \"Exit code: $?\")"
+    ]
+  }
+}

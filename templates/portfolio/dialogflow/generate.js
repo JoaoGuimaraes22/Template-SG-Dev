@@ -1,3 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// launchkit — Dialogflow Intent Generator
+//
+// THIS FILE is the source of truth for all chatbot responses.
+// DO NOT edit the files in intents/ directly — they are overwritten each time
+// you run this script.
+//
+// Workflow:
+//   1. Edit the intent definitions below (look for // EDIT: comments)
+//   2. node dialogflow/generate.js   ← regenerates intents/
+//   3. node dialogflow/zip.js        ← bundles into portfolio-agent.zip
+//   4. Dialogflow console → Settings → Import & Export → Restore from zip
+// ─────────────────────────────────────────────────────────────────────────────
+
 const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
@@ -56,10 +70,12 @@ const intents = [
     events: [{ name: "WELCOME" }],
     messages: [
       msg("en", [
+        // EDIT: Replace "João" with your first name throughout these strings
         "Hi! I'm João's assistant. Ask me about his services, pricing, projects, or availability!",
         "Hey there! What would you like to know about João's work?",
       ]),
       msg("pt", [
+        // EDIT: Replace "João" / "do João" with your name (Portuguese form)
         "Olá! Sou o assistente do João. Pergunta-me sobre serviços, preços, projetos ou disponibilidade!",
         "Olá! Como posso ajudar?",
       ]),
@@ -74,6 +90,7 @@ const intents = [
     messages: [
       msg("en", [
         "Sorry, I didn't quite catch that. Try asking about services, pricing, projects, or how to get in touch!",
+        // EDIT: Replace "João's" with your name
         "I'm not sure I understood. Ask me about João's services, timeline, or portfolio!",
       ]),
       msg("pt", [
@@ -88,9 +105,11 @@ const intents = [
     name: "services",
     messages: [
       msg("en", [
+        // EDIT: Replace "João" with your name and update the service list to match your dict.services.items[]
         "João offers three core services: Web Design (modern, conversion-focused websites), Web Development (Next.js, React, custom builds), and Digital Marketing (SEO, branding, strategy). Want to know more about any of these?",
       ]),
       msg("pt", [
+        // EDIT: Same as above — update name and services in Portuguese
         "O João oferece três serviços principais: Web Design (websites modernos e focados em conversão), Desenvolvimento Web (Next.js, React, soluções personalizadas) e Marketing Digital (SEO, branding, estratégia). Queres saber mais?",
       ]),
     ],
@@ -118,9 +137,11 @@ const intents = [
     name: "pricing",
     messages: [
       msg("en", [
+        // EDIT: Update starting price, replace "João" with your name, replace email with YOUR_EMAIL
         "Pricing depends on the project scope. A typical website starts from €800. João offers custom quotes — reach out via the contact form or email jssgmrs22@gmail.com for a free consultation!",
       ]),
       msg("pt", [
+        // EDIT: Same as above in Portuguese — update price and email
         "O preço depende do âmbito do projeto. Um website típico começa a partir de €800. O João faz orçamentos personalizados — usa o formulário de contacto ou envia email para jssgmrs22@gmail.com!",
       ]),
     ],
@@ -173,9 +194,11 @@ const intents = [
     name: "contact",
     messages: [
       msg("en", [
+        // EDIT: Replace "João" with your name and jssgmrs22@gmail.com with YOUR_EMAIL
         "You can reach João at jssgmrs22@gmail.com, or use the contact form at the bottom of this page. He's also on LinkedIn and GitHub — links are in the sidebar!",
       ]),
       msg("pt", [
+        // EDIT: Same as above in Portuguese
         "Podes contactar o João em jssgmrs22@gmail.com, ou usar o formulário de contacto no fundo da página. Também está no LinkedIn e GitHub — os links estão na barra lateral!",
       ]),
     ],
@@ -200,9 +223,11 @@ const intents = [
     name: "portfolio",
     messages: [
       msg("en", [
+        // EDIT: Replace "João" with your name, update project count and project names to match dict.work.projects[]
         "João has built 6+ websites including Cascais Volley Cup, Koya's Bistro, SorrisoPlus Dental Clinic, AquaFix Plumbing, Revicar Auto Repair, and Bella Hair Salon. Check out the Work section on this page!",
       ]),
       msg("pt", [
+        // EDIT: Same as above in Portuguese
         "O João construiu mais de 6 websites, incluindo Cascais Volley Cup, Koya's Bistro, SorrisoPlus Clínica Dentária, AquaFix Canalizações, Revicar Oficina e Bella Hair Salon. Vê a secção de Trabalhos nesta página!",
       ]),
     ],
@@ -227,9 +252,11 @@ const intents = [
     name: "availability",
     messages: [
       msg("en", [
+        // EDIT: Replace "João" with your name; update if you're not currently available
         "Yes, João is currently available for new projects! He's open to freelance web design, development, and marketing work. Use the contact form to discuss your project!",
       ]),
       msg("pt", [
+        // EDIT: Same as above in Portuguese
         "Sim, o João está disponível para novos projetos! Está aberto a trabalho freelance em web design, desenvolvimento e marketing. Usa o formulário de contacto para discutir o teu projeto!",
       ]),
     ],
@@ -254,15 +281,19 @@ const intents = [
     name: "about",
     messages: [
       msg("en", [
+        // EDIT: Replace full name, role, city/country, years of experience, and project count
+        // Match dict.about.bio and dict.hero.stats[]
         "João Guimarães is a Web Designer, Developer, and Marketing Strategist based in Cascais, Portugal. With 3+ years of experience, he has launched 10+ websites for local businesses — helping them convert visitors into clients.",
       ]),
       msg("pt", [
+        // EDIT: Same as above in Portuguese
         "João Guimarães é um Web Designer, Programador e Estrategista de Marketing baseado em Cascais, Portugal. Com mais de 3 anos de experiência, já lançou mais de 10 websites para empresas locais.",
       ]),
     ],
     phrases_en: [
       "Who are you",
       "Tell me about yourself",
+      // EDIT: Replace "João" with your first name
       "Who is João",
       "What is your background",
       "Who is the designer",
@@ -272,6 +303,7 @@ const intents = [
     phrases_pt: [
       "Quem és tu",
       "Fala-me sobre ti",
+      // EDIT: Replace "o João" with your name
       "Quem é o João",
       "Qual é a tua experiência",
       "Quantos anos de experiência tens",
@@ -281,9 +313,11 @@ const intents = [
     name: "location",
     messages: [
       msg("en", [
+        // EDIT: Replace "João", city, country, and timezone (GMT+X) — match ProfileSidebar YOUR_CITY / YOUR_TIMEZONE
         "João is based in Cascais, Portugal (GMT+1). He works with clients both locally and remotely across Europe and beyond — location is no barrier!",
       ]),
       msg("pt", [
+        // EDIT: Same as above in Portuguese
         "O João está baseado em Cascais, Portugal (GMT+1). Trabalha com clientes localmente e remotamente em toda a Europa!",
       ]),
     ],
@@ -395,9 +429,11 @@ const intents = [
     name: "languages",
     messages: [
       msg("en", [
+        // EDIT: Replace "João" with your name; update languages if different
         "João is fluent in both Portuguese and English, so he can work with clients in either language — no worries there!",
       ]),
       msg("pt", [
+        // EDIT: Same as above in Portuguese
         "O João fala português e inglês fluentemente, por isso consegue trabalhar com clientes em qualquer uma das línguas!",
       ]),
     ],

@@ -23,7 +23,7 @@ Ask me ALL of the following **in a single numbered list** (don't start any work 
 1. Business name (used in Navbar logo, metadata, Footer, JSON-LD)
 2. Business type (e.g. "dental clinic", "hair salon", "plumbing service") — for context
 3. Tagline / one-sentence description (used in Footer and hero)
-4. Primary accent color — Tailwind color name or hex (e.g. "teal", "emerald", "#2563eb"). Default: indigo
+4. Primary accent color — only needed if you chose a **custom hex** during setup (e.g. "#2563eb"). Skip if you selected a preset color in setup.js.
 5. City and country (for metadata and contact section)
 6. Phone number (including country code, e.g. +351 912 345 678)
 7. WhatsApp number (digits only, no spaces, e.g. 351912345678)
@@ -95,11 +95,9 @@ If i18n is enabled (check: `i18n-config.ts` exists), also fill `dictionaries/pt.
 - `app/api/contact/route.ts`: `TO_EMAIL` → actual email
 
 ### 3d. Accent color
-Replace all `indigo-` Tailwind classes in the business components with the brand color:
-- Files to update: `HeroContent.tsx`, `About.tsx`, `Services.tsx`, `FAQ.tsx`, `Contact.tsx`, `Navbar.tsx`, `FloatingCTA.tsx`
-- Classes to replace: `bg-indigo-600`, `hover:bg-indigo-700`, `text-indigo-600`, `bg-indigo-50`, `text-indigo-500`, `border-indigo-500`, `focus-visible:outline-indigo-600`
-- If hex color: use arbitrary Tailwind values `bg-[#hex]`, `text-[#hex]`
-- Document the brand color in a comment at the top of `globals.css`
+**Automated by `setup.js`** — if you chose a color other than Indigo during setup, all `indigo-` Tailwind classes were already replaced across every business component.
+
+If you need a custom hex color not in the preset list, do a project-wide find-and-replace of `indigo-` with the arbitrary Tailwind values (e.g. `bg-[#2563eb]`, `text-[#2563eb]`) in the files listed in CLAUDE.md.
 
 ### 3e. SEO
 - `app/robots.ts` and `app/sitemap.ts`: replace `YOUR_DOMAIN` with actual domain

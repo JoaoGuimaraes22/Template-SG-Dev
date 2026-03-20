@@ -95,7 +95,10 @@ If i18n is enabled (`i18n-config.ts` exists), also update `dictionaries/pt.json`
 
 ### 3f. Chatbot (if active)
 - `app/[locale]/components/ChatWidget.tsx`: greeting strings → reference actual name
+- `dialogflow/generate.js`: look for `// EDIT:` comments — update name, services, pricing, email, projects, location
 - `dialogflow/agent.json`: `description` → actual name
+- After editing `generate.js`: run `node dialogflow/generate.js` then `node dialogflow/zip.js`
+- **Do NOT edit files in `dialogflow/intents/` directly** — they are overwritten by `generate.js`
 
 ### 3g. SEO
 - `app/robots.ts` and `app/sitemap.ts`: `SITE_URL` → actual domain (verify they already have placeholders)
@@ -145,8 +148,9 @@ Walk me through:
 1. Creating a Dialogflow ES agent
 2. Setting up the Google Cloud service account
 3. Setting `GOOGLE_CREDENTIALS` and `DIALOGFLOW_PROJECT_ID` in `.env.local`
-4. Running `node dialogflow/zip.js` and importing the zip
-5. Customizing `dialogflow/intents/` with my actual FAQ answers
+4. Editing `dialogflow/generate.js` (all `// EDIT:` markers) with my actual content
+5. Running `node dialogflow/generate.js` → then `node dialogflow/zip.js` → then importing the zip
+6. **Note:** never edit `dialogflow/intents/` directly — `generate.js` overwrites them
 
 ### Resend (if `app/api/contact/route.ts` exists)
 Walk me through:

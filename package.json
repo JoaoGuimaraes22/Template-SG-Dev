@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "reset": "node scripts/reset.js"
+    "reset": "node scripts/reset.js",
+    "validate": "node scripts/validate.js"
   },
   "dependencies": {
     "framer-motion": "^12.35.1",
