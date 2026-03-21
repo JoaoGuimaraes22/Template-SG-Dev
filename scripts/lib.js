@@ -535,20 +535,42 @@ function parseSectionsFromPage(pageFile) {
 // Returns { [sectionName]: { variant, meta, variantDir } } for installed sections.
 // If launchkitSections is provided, uses its recorded variant name to disambiguate
 // when multiple variants share the same componentName.
-function detectInstalledSections(compDir, launchkitSections) {
+// If templateType is provided, prefers variants compatible with the template when
+// no .launchkit record exists.
+// Detection: uses meta.detectFile if set, otherwise checks {compDir}/{componentName}.tsx.
+// Sections with neither detectFile nor componentName cannot be auto-detected.
+function detectInstalledSections(compDir, launchkitSections, templateType) {
   const sections = discoverSections();
   const installed = {};
   for (const section of sections) {
-    // Check if the component file exists (any variant — they share componentName)
+    // Skip sections not compatible with this template type
+    if (templateType) {
+      const compatible = section.variants.some((v) => v.meta.templates.includes(templateType));
+      if (!compatible) continue;
+    }
+
     const anyMeta = section.variants[0].meta;
-    const compFile = path.join(_target, compDir, `${anyMeta.componentName}.tsx`);
-    if (!fs.existsSync(compFile)) continue;
+
+    // Determine if the section is installed
+    let detected = false;
+    if (anyMeta.detectFile) {
+      const filePath = anyMeta.detectFile.replace("{compDir}", compDir);
+      detected = fs.existsSync(path.join(_target, filePath));
+    } else if (anyMeta.componentName) {
+      detected = fs.existsSync(path.join(_target, compDir, `${anyMeta.componentName}.tsx`));
+    }
+    if (!detected) continue;
 
     // Prefer the variant recorded in .launchkit if available
     const recorded = launchkitSections && launchkitSections[section.name];
-    const variant = recorded
-      ? section.variants.find((v) => v.name === recorded.variant) || section.variants[0]
-      : section.variants[0];
+    let variant;
+    if (recorded) {
+      variant = section.variants.find((v) => v.name === recorded.variant) || section.variants[0];
+    } else if (templateType) {
+      variant = section.variants.find((v) => v.meta.templates.includes(templateType)) || section.variants[0];
+    } else {
+      variant = section.variants[0];
+    }
 
     installed[section.name] = {
       variant: variant.name,

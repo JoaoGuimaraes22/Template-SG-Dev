@@ -28,6 +28,10 @@ templates/
   sections/           Section library — each section has variants with component + dict + meta.json
     skills/grid/      Categorized grid cards with animated progress bars
     skills/bars/      Flat horizontal progress bars list
+    testimonials/scrolling/  Scrolling multi-column testimonial cards (portfolio)
+    contact-form/portfolio/  Resend contact API route (portfolio)
+    contact-form/business/   Resend contact API route with phone (business)
+    floating-cta/default/    Fixed mobile CTA bar with call/WhatsApp/book (business)
 ```
 
 All scripts support `--help`. If `--project` is omitted, scripts fall back to cwd.
@@ -76,8 +80,8 @@ Components live in `app/[locale]/components/` (i18n on) or `app/components/` (i1
 
 Sections live in `templates/sections/[name]/[variant]/`. Each variant contains:
 
-- `component.tsx` — the React component (copied to `compDir/ComponentName.tsx`)
-- `en.json` / `pt.json` — dict fragments merged under `meta.dictKey`
+- `component.tsx` — the React component (copied to `compDir/ComponentName.tsx`). Optional for non-page sections (e.g. contact-form).
+- `en.json` / `pt.json` — dict fragments merged under `meta.dictKey`. Optional if `dictKey` is null.
 - `meta.json` — section metadata driving the add/remove flow
 - `hooks.js` (optional) — `afterEnable(ctx)`, `beforeDisable(ctx)`, `afterDisable(ctx)`, `detect(ctx)`
 
@@ -85,22 +89,24 @@ Sections live in `templates/sections/[name]/[variant]/`. Each variant contains:
 
 ```jsonc
 {
-  "componentName": "Skills",           // PascalCase, matches default export
-  "dictKey": "skills",                 // top-level key in en.json/pt.json
+  "componentName": "Skills",           // PascalCase, matches default export. null = no component
+  "dictKey": "skills",                 // top-level key in en.json/pt.json. null = no dict merge
   "navLink": { "id": "skills", "label": { "en": "Skills", "pt": "Competências" } },
   "templates": ["portfolio", "business"], // compatible template types
   "defaultAfter": "services",          // preselected insertion position
+  "pageSection": true,                 // true (default) = content section; false = skip position prompt + import/JSX
+  "detectFile": null,                  // override component-based detection (e.g. "app/api/contact/route.ts")
   "props": { "i18n": "skills={dict.skills}", "collapsed": "skills={dict.skills}" },
   "collapsePatches": [],               // patches applied when i18n is off
   "accentColorToken": "indigo",        // color token swapped to project accent
   "dependencies": [],                  // [["package", "^version"]] for npm deps
-  "extraFiles": []                     // [{ src, dest, destCollapsed? }]
+  "extraFiles": []                     // [{ src, dest, destCollapsed?, cleanupDir? }]
 }
 ```
 
 ### Section Detection
 
-`detectInstalledSections(compDir, launchkitSections)` cross-references `discoverSections()` with component files in the project. Uses `.launchkit` recorded variant to disambiguate when variants share a `componentName`. `parseSectionsFromPage(pageFile)` extracts `<ComponentName` lines from page.tsx, excluding structural components (`Hero`, `HeroFull`, `ProfileSidebar`, `Footer`, `FloatingCTA`).
+`detectInstalledSections(compDir, launchkitSections)` cross-references `discoverSections()` with component files in the project. Uses `meta.detectFile` if set, otherwise checks `{compDir}/{componentName}.tsx`. Uses `.launchkit` recorded variant to disambiguate when variants share a `componentName`. `parseSectionsFromPage(pageFile)` extracts `<ComponentName` lines from page.tsx, excluding structural components (`Hero`, `HeroFull`, `ProfileSidebar`, `Footer`, `FloatingCTA`).
 
 ## Placeholder Markers
 

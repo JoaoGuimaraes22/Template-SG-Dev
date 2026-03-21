@@ -1,0 +1,16 @@
+{
+  "componentName": "FloatingCTA",
+  "dictKey": "cta",
+  "navLink": null,
+  "pageSection": false,
+  "templates": ["business"],
+  "defaultAfter": null,
+  "props": {
+    "i18n": "cta={dict.cta}",
+    "collapsed": "cta={dict.cta}"
+  },
+  "collapsePatches": [],
+  "accentColorToken": "indigo",
+  "dependencies": [],
+  "extraFiles": []
+}
