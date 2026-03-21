@@ -21,6 +21,9 @@ const {
 
 const LAUNCHKIT_PATH = path.join(ROOT, ".launchkit");
 
+const COLOR_MAP = ["indigo", "blue", "violet", "rose", "amber", "emerald", "cyan", "orange"];
+const COLOR_LABELS = ["Indigo (default)", "Blue", "Violet", "Rose", "Amber", "Emerald", "Cyan", "Orange"];
+
 function ask(rl, question) {
   return new Promise((resolve) => {
     rl.question(question + " [y/n] ", (answer) => {
@@ -69,10 +72,13 @@ function detectCurrentState(type, compDir) {
       sidebar: exists(`${compDir}/ProfileSidebar.tsx`),
     };
   } else {
+    const contactFile = path.join(ROOT, `${compDir}/Contact.tsx`);
+    const hasWhatsApp = fs.existsSync(contactFile) && fs.readFileSync(contactFile, "utf8").includes("wa.me/");
     return {
       i18n: exists("i18n-config.ts"),
       contactForm: exists("app/api/contact/route.ts"),
       floatingCTA: exists(`${compDir}/FloatingCTA.tsx`),
+      whatsapp: hasWhatsApp,
     };
   }
 }
@@ -261,6 +267,13 @@ function enableChatbot(compDir, layoutFile, i18nActive, sidebarActive) {
           ? "<CtaButton locale={locale} /></motion.div>\n      <motion.div {...fadeUp(inView, 0.44)}><ChatNudge locale={locale} /></motion.div>\n\n      <motion.div className=\"flex gap-5\""
           : "<CtaButton /></motion.div>\n      <motion.div {...fadeUp(inView, 0.44)}><ChatNudge /></motion.div>\n\n      <motion.div className=\"flex gap-5\""
       );
+      // Verify injection succeeded — JSX anchors may not match if ProfileSidebar was customized
+      const afterInject = fs.readFileSync(path.join(ROOT, sidebarPath), "utf8");
+      if (!afterInject.includes("<ChatNudge")) {
+        console.warn("  [warn] ChatNudge could not be auto-injected into ProfileSidebar.tsx.");
+        console.warn("         The expected JSX anchor was not found — the file may have been customized.");
+        console.warn("         Add <ChatNudge /> manually below <CtaButton /> in both render blocks.");
+      }
     }
   }
 
@@ -434,6 +447,153 @@ function disableSidebar(compDir, pageFile) {
   }
 }
 
+// ─── Business: WhatsApp ───────────────────────────────────────────────────────
+
+function enableWhatsapp(compDir) {
+  // ── Contact.tsx: re-insert WhatsApp block from template ──
+  const contactFile = `${compDir}/Contact.tsx`;
+  const contactFull = path.join(ROOT, contactFile);
+  const templateContact = path.join(ROOT, "templates/business/app/[locale]/components/Contact.tsx");
+  if (fs.existsSync(contactFull) && fs.existsSync(templateContact)) {
+    let live = fs.readFileSync(contactFull, "utf8");
+    if (!live.includes("wa.me/")) {
+      const tmpl = fs.readFileSync(templateContact, "utf8");
+      const s = tmpl.indexOf("{/* WhatsApp */}");
+      const e = tmpl.indexOf("{/* Email */}");
+      if (s !== -1 && e !== -1) {
+        live = live.replace("{/* Email */}", tmpl.slice(s, e) + "{/* Email */}");
+        fs.writeFileSync(contactFull, live, "utf8");
+        console.log("  [patched]", contactFile, "— added WhatsApp block");
+      }
+    }
+  }
+
+  // ── FloatingCTA.tsx: re-insert WhatsApp button from template ──
+  const ctaFile = `${compDir}/FloatingCTA.tsx`;
+  const ctaFull = path.join(ROOT, ctaFile);
+  const templateCta = path.join(ROOT, "templates/business/app/[locale]/components/FloatingCTA.tsx");
+  if (fs.existsSync(ctaFull) && fs.existsSync(templateCta)) {
+    let live = fs.readFileSync(ctaFull, "utf8");
+    if (!live.includes("wa.me/")) {
+      // Restore whatsapp fields in CTADict interface
+      replaceInFile(ctaFile, "  book_label: string;", "  whatsapp_label: string;\n  whatsapp: string;\n  book_label: string;");
+      // Extract separator + WhatsApp <a> block from template
+      const tmpl = fs.readFileSync(templateCta, "utf8");
+      const waIdx = tmpl.indexOf("wa.me/");
+      const sepIdx = tmpl.lastIndexOf("<div", waIdx);
+      const endIdx = tmpl.indexOf("</a>", waIdx) + "</a>".length;
+      const waBlock = tmpl.slice(sepIdx, endIdx);
+      // Re-read after interface patch, then insert before the last separator (before <button>)
+      live = fs.readFileSync(ctaFull, "utf8");
+      const lastSep = live.lastIndexOf('<div className="w-px bg-zinc-200" />');
+      if (lastSep !== -1) {
+        live = live.slice(0, lastSep) + waBlock + "\n\n      " + live.slice(lastSep);
+        fs.writeFileSync(ctaFull, live, "utf8");
+        console.log("  [patched]", ctaFile, "— added WhatsApp button");
+      }
+    }
+  }
+
+  // ── Dictionaries: restore whatsapp fields from template ──
+  for (const lang of ["en", "pt"]) {
+    const dictFile = `dictionaries/${lang}.json`;
+    const dictFull = path.join(ROOT, dictFile);
+    const tmplDictFull = path.join(ROOT, `templates/business/dictionaries/${lang}.json`);
+    if (fs.existsSync(dictFull) && fs.existsSync(tmplDictFull)) {
+      const dict = JSON.parse(fs.readFileSync(dictFull, "utf8"));
+      const tmpl = JSON.parse(fs.readFileSync(tmplDictFull, "utf8"));
+      let changed = false;
+      if (dict.contact && !dict.contact.whatsapp && tmpl.contact?.whatsapp) {
+        dict.contact.whatsapp = tmpl.contact.whatsapp;
+        changed = true;
+      }
+      if (dict.cta && !dict.cta.whatsapp && tmpl.cta?.whatsapp) {
+        dict.cta.whatsapp = tmpl.cta.whatsapp;
+        dict.cta.whatsapp_label = tmpl.cta.whatsapp_label;
+        changed = true;
+      }
+      if (changed) {
+        fs.writeFileSync(dictFull, JSON.stringify(dict, null, 2) + "\n", "utf8");
+        console.log("  [patched]", dictFile, "— restored whatsapp fields");
+      }
+    }
+  }
+}
+
+function disableWhatsapp(compDir) {
+  // ── Contact.tsx: remove WhatsApp block ──
+  const contactFile = `${compDir}/Contact.tsx`;
+  const contactFull = path.join(ROOT, contactFile);
+  if (fs.existsSync(contactFull)) {
+    let content = fs.readFileSync(contactFull, "utf8");
+    const s = content.indexOf("{/* WhatsApp */}");
+    const e = content.indexOf("{/* Email */}");
+    if (s !== -1 && e !== -1 && s < e) {
+      // Also consume the preceding blank line
+      const trimFrom = content[s - 2] === "\n" ? s - 1 : s;
+      content = content.slice(0, trimFrom) + content.slice(e);
+      fs.writeFileSync(contactFull, content, "utf8");
+      console.log("  [patched]", contactFile, "— removed WhatsApp block");
+    }
+  }
+
+  // ── FloatingCTA.tsx: remove separator + WhatsApp button ──
+  const ctaFile = `${compDir}/FloatingCTA.tsx`;
+  const ctaFull = path.join(ROOT, ctaFile);
+  if (fs.existsSync(ctaFull)) {
+    let content = fs.readFileSync(ctaFull, "utf8");
+    if (content.includes("wa.me/")) {
+      const waIdx = content.indexOf("wa.me/");
+      const sepIdx = content.lastIndexOf("<div", waIdx);
+      const endIdx = content.indexOf("</a>", waIdx) + "</a>".length;
+      content = content.slice(0, sepIdx) + content.slice(endIdx);
+      fs.writeFileSync(ctaFull, content, "utf8");
+      console.log("  [patched]", ctaFile, "— removed WhatsApp button");
+      removeLineContaining(ctaFile, "whatsapp_label: string;");
+      removeLineContaining(ctaFile, "  whatsapp: string;");
+    }
+  }
+
+  // ── Dictionaries: remove whatsapp fields ──
+  for (const lang of ["en", "pt"]) {
+    const dictFile = `dictionaries/${lang}.json`;
+    const dictFull = path.join(ROOT, dictFile);
+    if (fs.existsSync(dictFull)) {
+      const dict = JSON.parse(fs.readFileSync(dictFull, "utf8"));
+      let changed = false;
+      if (dict.contact?.whatsapp !== undefined) { delete dict.contact.whatsapp; changed = true; }
+      if (dict.cta?.whatsapp !== undefined) { delete dict.cta.whatsapp; changed = true; }
+      if (dict.cta?.whatsapp_label !== undefined) { delete dict.cta.whatsapp_label; changed = true; }
+      if (changed) {
+        fs.writeFileSync(dictFull, JSON.stringify(dict, null, 2) + "\n", "utf8");
+        console.log("  [patched]", dictFile, "— removed whatsapp fields");
+      }
+    }
+  }
+}
+
+// ─── Business: Accent Color ───────────────────────────────────────────────────
+
+// Replaces all occurrences of fromColor- with toColor- across business component files.
+function recolorAccent(compDir, layoutFile, fromColor, toColor) {
+  const files = [
+    layoutFile,
+    `${compDir}/About.tsx`,
+    `${compDir}/Contact.tsx`,
+    `${compDir}/FAQ.tsx`,
+    `${compDir}/FloatingCTA.tsx`,
+    `${compDir}/HeroContent.tsx`,
+    `${compDir}/LanguageSwitcher.tsx`,
+    `${compDir}/Navbar.tsx`,
+    `${compDir}/Reviews.tsx`,
+    `${compDir}/ScrollProgress.tsx`,
+    `${compDir}/Services.tsx`,
+  ];
+  for (const f of files) {
+    replaceInFile(f, `${fromColor}-`, `${toColor}-`);
+  }
+}
+
 // ─── Business: Enable/Disable ─────────────────────────────────────────────────
 
 function enableFloatingCTA(compDir, pageFile) {
@@ -498,6 +658,8 @@ function getFeatureList(type) {
     return [
       { key: "contactForm", label: "Contact Form (Resend API)" },
       { key: "floatingCTA", label: "FloatingCTA bar (mobile)" },
+      { key: "whatsapp",    label: "WhatsApp button (contact + FloatingCTA)" },
+      { key: "accentColor", label: "Brand accent color", recolor: true },
       { key: "i18n", label: "i18n routing", unsupported: true },
     ];
   }
@@ -517,12 +679,35 @@ async function runToggle(rl) {
   const current = detectCurrentState(type, compDir);
   const features = getFeatureList(type);
 
+  // Warn if .launchkit recorded state diverges from actual file state
+  const drifted = features.filter(
+    (f) => !f.unsupported && !f.recolor &&
+           state.features?.[f.key] !== undefined &&
+           state.features[f.key] !== current[f.key]
+  );
+  if (drifted.length > 0) {
+    console.log("\n  ⚠  Feature state mismatch (.launchkit vs actual files):");
+    for (const f of drifted) {
+      const recorded = state.features[f.key] ? "enabled" : "disabled";
+      const actual   = current[f.key]         ? "enabled" : "disabled";
+      console.log(`     ${f.label}: recorded=${recorded}, actual=${actual}`);
+    }
+    console.log("     Proceeding with actual file state.\n");
+  }
+
   console.log(`\n  Template : ${type.charAt(0).toUpperCase() + type.slice(1)}`);
   console.log(`  i18n     : ${i18nActive ? "enabled" : "disabled (collapsed)"}\n`);
 
   features.forEach((f, i) => {
-    const icon = f.unsupported ? "⚠ " : current[f.key] ? "✓ " : "✗ ";
-    const suffix = f.unsupported ? " (requires reset + setup)" : "";
+    let icon, suffix;
+    if (f.unsupported) {
+      icon = "⚠ "; suffix = " (requires reset + setup)";
+    } else if (f.recolor) {
+      const cur = state.features?.accentColor ?? "indigo";
+      icon = "● "; suffix = ` (current: ${cur})`;
+    } else {
+      icon = current[f.key] ? "✓ " : "✗ "; suffix = "";
+    }
     console.log(`  [${i + 1}] ${icon} ${f.label}${suffix}`);
   });
 
@@ -538,6 +723,22 @@ async function runToggle(rl) {
   if (selected.unsupported) {
     console.log(`\n  ⚠  i18n routing cannot be toggled in-place.\n  Run npm run reset + node scripts/setup.js to change this setting.\n`);
     return false;
+  }
+
+  if (selected.recolor) {
+    const fromColor = state.features?.accentColor ?? "indigo";
+    const colorChoice = await askChoice(rl, `\n  Current color: ${fromColor}\n  Select new accent color`, COLOR_LABELS);
+    const toColor = COLOR_MAP[colorChoice - 1];
+    if (toColor === fromColor) {
+      console.log("\n  No change — same color selected.\n");
+      return false;
+    }
+    console.log(`\n─── Recoloring: ${fromColor} → ${toColor} ────────────────────────────────────\n`);
+    recolorAccent(compDir, layoutFile, fromColor, toColor);
+    state.features.accentColor = toColor;
+    writeLaunchkit(state);
+    console.log(`\n✓  Accent color updated: ${fromColor} → ${toColor}.`);
+    return true;
   }
 
   const isCurrentlyEnabled = current[selected.key];
@@ -561,6 +762,7 @@ async function runToggle(rl) {
         case "work":        enableWork(compDir, pageFile, i18nActive); break;
         case "sidebar":     enableSidebar(compDir, pageFile, i18nActive, current.chatbot); break;
         case "floatingCTA": enableFloatingCTA(compDir, pageFile); break;
+        case "whatsapp":    enableWhatsapp(compDir); break;
       }
     } else {
       switch (selected.key) {
@@ -571,6 +773,7 @@ async function runToggle(rl) {
         case "work":        disableWork(compDir, pageFile, i18nActive); break;
         case "sidebar":     disableSidebar(compDir, pageFile); break;
         case "floatingCTA": disableFloatingCTA(compDir, pageFile); break;
+        case "whatsapp":    disableWhatsapp(compDir); break;
       }
     }
   } catch (err) {

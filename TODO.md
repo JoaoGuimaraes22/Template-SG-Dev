@@ -16,15 +16,15 @@
 
 ## toggle.js Gaps
 
-- [ ] Business accent color toggle — only `setup.js` handles this today; `npm run toggle` should expose a re-color option for business sites
-- [ ] Business WhatsApp toggle — listed in `SETUP.md` as a standalone feature but not independently toggleable (currently tied to FloatingCTA)
-- [ ] Harden `enableChatbot` ProfileSidebar re-injection — relies on exact JSX string matching; add a clear fallback message if the anchor isn't found
-- [ ] `.launchkit` drift detection — before any toggle, warn if recorded feature state doesn't match actual file state (e.g. someone manually deleted a component file)
+- [x] Business accent color toggle — only `setup.js` handles this today; `npm run toggle` should expose a re-color option for business sites
+- [x] Business WhatsApp toggle — listed in `SETUP.md` as a standalone feature but not independently toggleable (currently tied to FloatingCTA)
+- [x] Harden `enableChatbot` ProfileSidebar re-injection — relies on exact JSX string matching; add a clear fallback message if the anchor isn't found
+- [x] `.launchkit` drift detection — before any toggle, warn if recorded feature state doesn't match actual file state (e.g. someone manually deleted a component file)
 
 ## validate.js Improvements
 
-- [ ] Warn when placeholder images (`hero.jpg`, `profile.jpg`, `og-image.png`) are still the shipped defaults — check by file size or hash
-- [ ] Group output by category (Placeholders / TODOs / Env) for easier scanning at a glance
+- [x] Warn when placeholder images (`hero.jpg`, `profile.jpg`, `og-image.png`) are still the shipped defaults — check by file size or hash
+- [x] Group output by category (Placeholders / TODOs / Env) for easier scanning at a glance
 
 ## Section Library (`npm run add`)
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // launchkit — Validate Script
-// Checks for unreplaced YOUR_* placeholders and TODO: TEMPLATE comments.
+// Checks for unreplaced YOUR_* placeholders, TODO: TEMPLATE comments,
+// default placeholder images, and a missing .env.local.
 // Run: node scripts/validate.js  (or: npm run validate)
 
 const fs = require("fs");
@@ -8,7 +9,7 @@ const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
 
-// Directories to scan
+// Directories to scan for placeholders and TODO comments
 const SCAN_DIRS = ["app", "dictionaries"];
 
 // Dirs/files to skip while walking
@@ -25,7 +26,8 @@ function componentExists(name) {
 }
 
 const isPortfolio = componentExists("ProfileSidebar.tsx");
-const isBusiness = componentExists("Footer.tsx");
+const isBusiness  = componentExists("Footer.tsx");
+const templateType = isPortfolio ? "portfolio" : "business";
 const templateName = isPortfolio ? "portfolio" : isBusiness ? "business site" : "unknown";
 
 // ── File walker ──────────────────────────────────────────────────────────────
@@ -49,7 +51,7 @@ function walkFiles(dir, results = []) {
   return results;
 }
 
-// ── Scan ─────────────────────────────────────────────────────────────────────
+// ── Scan: placeholders + TODOs ───────────────────────────────────────────────
 
 const placeholderHits = []; // { rel, line, match }
 const todoHits = [];        // { rel, line, match }
@@ -74,14 +76,12 @@ for (const scanDir of SCAN_DIRS) {
     lines.forEach((lineText, idx) => {
       const lineNum = idx + 1;
 
-      // Placeholders
-      let m;
       PLACEHOLDER_RE.lastIndex = 0;
+      let m;
       while ((m = PLACEHOLDER_RE.exec(lineText)) !== null) {
         placeholderHits.push({ rel, line: lineNum, match: m[0] });
       }
 
-      // TODO comments
       if (TODO_RE.test(lineText)) {
         todoHits.push({ rel, line: lineNum, match: lineText.trim() });
       }
@@ -89,48 +89,95 @@ for (const scanDir of SCAN_DIRS) {
   }
 }
 
-// ── Report ───────────────────────────────────────────────────────────────────
+// ── Scan: placeholder images ─────────────────────────────────────────────────
+
+// Returns true if the file exists and matches the shipped template size (never replaced).
+function isDefaultImage(relPath, templateRelPath) {
+  const full = path.join(ROOT, relPath);
+  const tmpl = path.join(ROOT, templateRelPath);
+  if (!fs.existsSync(full) || !fs.existsSync(tmpl)) return false;
+  return fs.statSync(full).size === fs.statSync(tmpl).size;
+}
+
+const imageWarnings = []; // { rel, reason }
+
+const imagesToCheck = [
+  { rel: "public/hero.jpg",     tmpl: `templates/${templateType}/public/hero.jpg` },
+  { rel: "public/og-image.png", tmpl: null }, // not shipped — just check existence
+];
+if (isPortfolio) {
+  imagesToCheck.push({ rel: "public/profile.jpg", tmpl: "templates/portfolio/public/profile.jpg" });
+}
+if (isBusiness) {
+  imagesToCheck.push({ rel: "public/about.jpg", tmpl: null });
+}
+
+for (const { rel, tmpl } of imagesToCheck) {
+  const full = path.join(ROOT, rel);
+  if (!fs.existsSync(full)) {
+    imageWarnings.push({ rel, reason: "missing" });
+  } else if (tmpl && isDefaultImage(rel, tmpl)) {
+    imageWarnings.push({ rel, reason: "still the shipped default — replace before deploying" });
+  }
+}
+
+// ── Scan: env ────────────────────────────────────────────────────────────────
 
 const envExists = fs.existsSync(path.join(ROOT, ".env.local"));
 
+// ── Report ───────────────────────────────────────────────────────────────────
+
+const div = (label) => console.log(`  ─── ${label} ${"─".repeat(Math.max(0, 44 - label.length))}`);
+
 console.log();
-console.log(
-  `  [validate] launchkit — ${templateName} template, i18n ${i18nActive ? "enabled" : "disabled"}`
-);
-console.log(`  [check]    Scanning ${SCAN_DIRS.join(", ")} ...`);
+console.log(`  launchkit validate — ${templateName}, i18n ${i18nActive ? "on" : "off"}`);
 console.log();
 
 let failed = false;
 
-// Placeholders
+// ── Placeholders ──────────────────────────────────────────────────────────────
+div("Placeholders");
 if (placeholderHits.length === 0) {
-  console.log("  [ok]    No unreplaced placeholders found");
+  console.log("  [ok]    No unreplaced YOUR_* placeholders");
 } else {
   failed = true;
-  console.log(`  [error] ${placeholderHits.length} unreplaced placeholder(s) found:`);
+  console.log(`  [error] ${placeholderHits.length} unreplaced placeholder(s):`);
   for (const { rel, line, match } of placeholderHits) {
-    const loc = `${rel}:${line}`.padEnd(60);
-    console.log(`            ${loc} ${match}`);
+    console.log(`            ${`${rel}:${line}`.padEnd(60)} ${match}`);
   }
 }
 
 console.log();
 
-// TODOs
+// ── TODOs ─────────────────────────────────────────────────────────────────────
+div("TODOs");
 if (todoHits.length === 0) {
-  console.log("  [ok]    No TODO: TEMPLATE comments found");
+  console.log("  [ok]    No TODO: TEMPLATE comments");
 } else {
   failed = true;
-  console.log(`  [warn]  ${todoHits.length} TODO: TEMPLATE comment(s) found:`);
+  console.log(`  [warn]  ${todoHits.length} TODO: TEMPLATE comment(s):`);
   for (const { rel, line, match } of todoHits) {
-    const loc = `${rel}:${line}`.padEnd(60);
-    console.log(`            ${loc} ${match}`);
+    console.log(`            ${`${rel}:${line}`.padEnd(60)} ${match}`);
   }
 }
 
 console.log();
 
-// .env.local
+// ── Images ────────────────────────────────────────────────────────────────────
+div("Images");
+if (imageWarnings.length === 0) {
+  console.log("  [ok]    All placeholder images have been replaced");
+} else {
+  console.log(`  [warn]  ${imageWarnings.length} image(s) need attention:`);
+  for (const { rel, reason } of imageWarnings) {
+    console.log(`            ${rel.padEnd(40)} ${reason}`);
+  }
+}
+
+console.log();
+
+// ── Env ───────────────────────────────────────────────────────────────────────
+div("Env");
 if (envExists) {
   console.log("  [ok]    .env.local exists");
 } else {
@@ -139,8 +186,9 @@ if (envExists) {
 
 console.log();
 
+// ── Result ────────────────────────────────────────────────────────────────────
 if (failed) {
-  console.log("  ✗  Validation failed — fix the above before deploying.\n");
+  console.log("  ✗  Validation failed — fix errors above before deploying.\n");
   process.exit(1);
 } else {
   console.log("  ✓  All checks passed.\n");
