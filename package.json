@@ -14,7 +14,8 @@
     "validate": "node scripts/validate.js",
     "status": "node scripts/status.js",
     "check": "npm run validate && npm run lint && npm run build",
-    "setup": "node scripts/setup.js"
+    "setup": "node scripts/setup.js",
+    "setup:blank": "node scripts/setup.js --blank"
   },
   "dependencies": {
     "framer-motion": "^12.35.1",

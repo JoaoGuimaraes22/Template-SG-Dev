@@ -1,0 +1,82 @@
+#!/usr/bin/env node
+// launchkit — Blank template module
+// Minimal scaffold: only i18n is selectable (and unsupported for toggle).
+
+const fs = require("fs");
+const path = require("path");
+const {
+  ROOT,
+  ask,
+  copyDir,
+  copyTemplateFiles,
+  deleteIfExists,
+} = require("../lib");
+
+const TYPE = "blank";
+
+// ── Feature list (used by toggle UI) ─────────────────────────────────────────
+
+const featureList = [
+  { key: "i18n", label: "i18n routing", unsupported: true },
+];
+
+// ── Feature detection ─────────────────────────────────────────────────────────
+
+function detectState() {
+  return {
+    i18n: fs.existsSync(path.join(ROOT, "i18n-config.ts")),
+  };
+}
+
+// ── Enable / disable (no toggleable features) ─────────────────────────────────
+
+function enable()  { /* no toggleable features */ }
+function disable() { /* no toggleable features */ }
+
+// ── i18n collapse (app/[locale]/ → app/) ─────────────────────────────────────
+
+function collapseI18n() {
+  console.log("\n─── Collapsing i18n routing (app/[locale]/ → app/) ─────────────\n");
+  copyDir("app/[locale]/components", "app/components");
+  const localeBase = path.join(ROOT, "app/[locale]");
+  fs.copyFileSync(path.join(localeBase, "layout.tsx"), path.join(ROOT, "app/layout.tsx"));
+  console.log("  [moved]  app/[locale]/layout.tsx → app/layout.tsx");
+  fs.copyFileSync(path.join(localeBase, "page.tsx"), path.join(ROOT, "app/page.tsx"));
+  console.log("  [moved]  app/[locale]/page.tsx → app/page.tsx");
+  deleteIfExists("app/[locale]");
+  deleteIfExists("dictionaries/pt.json");
+  console.log("\n✓  i18n routing collapsed — app/ is now locale-free");
+}
+
+// ── Interactive setup ─────────────────────────────────────────────────────────
+
+async function setup(rl) {
+  console.log("\n─── Blank — Feature Selection ──────────────────────────────────\n");
+
+  const features = {
+    i18n: await ask(rl, "[1/1] Include i18n (bilingual /en /pt routing)?"),
+  };
+
+  console.log(`\n─── Copying blank template ─────────────────────────────────────────\n`);
+  copyTemplateFiles(TYPE);
+
+  console.log("\n─── Applying blank template selections ──────────────────────────\n");
+
+  if (features.i18n) {
+    console.log("✓  i18n: enabled");
+    copyDir("templates/blank/root", ".");
+  } else {
+    console.log("⚙  i18n: disabled");
+    fs.writeFileSync(
+      path.join(ROOT, "app/sitemap.ts"),
+      `import type { MetadataRoute } from "next";\n\nconst SITE_URL = "https://YOUR_DOMAIN";\n\nexport default function sitemap(): MetadataRoute.Sitemap {\n  return [{ url: SITE_URL, lastModified: new Date() }];\n}\n`,
+      "utf8"
+    );
+    console.log("  [patched] sitemap.ts — simplified (no i18n)");
+    collapseI18n();
+  }
+
+  return { type: TYPE, features };
+}
+
+module.exports = { type: TYPE, featureList, detectState, setup, enable, disable };

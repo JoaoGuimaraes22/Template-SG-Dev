@@ -98,6 +98,54 @@ function removeDependency(depName) {
   }
 }
 
+// ── readline helpers ──────────────────────────────────────────────────────────
+
+// Prompts a y/n question. Returns true for "y".
+function ask(rl, question) {
+  return new Promise((resolve) => {
+    rl.question(question + " [y/n] ", (answer) => {
+      resolve(answer.trim().toLowerCase() === "y");
+    });
+  });
+}
+
+// Displays a numbered list and returns the 1-based choice index, or null for invalid input.
+function askChoice(rl, question, choices) {
+  return new Promise((resolve) => {
+    console.log(question);
+    choices.forEach((c, i) => console.log(`  [${i + 1}] ${c}`));
+    rl.question("Enter choice: ", (answer) => {
+      const n = parseInt(answer.trim(), 10);
+      resolve(n >= 1 && n <= choices.length ? n : null);
+    });
+  });
+}
+
+// ── .launchkit I/O ────────────────────────────────────────────────────────────
+
+function readLaunchkit() {
+  const p = path.join(ROOT, ".launchkit");
+  if (!fs.existsSync(p)) {
+    console.error("\n  Error: .launchkit not found.\n  Run node scripts/setup.js first.\n");
+    process.exit(1);
+  }
+  return JSON.parse(fs.readFileSync(p, "utf8"));
+}
+
+function writeLaunchkit(state) {
+  fs.writeFileSync(path.join(ROOT, ".launchkit"), JSON.stringify(state, null, 2) + "\n", "utf8");
+}
+
+// ── Template file copy ────────────────────────────────────────────────────────
+
+// Copies app/, dictionaries/, public/ from a template into the project root.
+// Dialogflow (portfolio-only) must be copied separately by the template module.
+function copyTemplateFiles(type) {
+  copyDir(`templates/${type}/app`, "app");
+  copyDir(`templates/${type}/dictionaries`, "dictionaries");
+  copyDir(`templates/${type}/public`, "public");
+}
+
 module.exports = {
   ROOT,
   deleteIfExists,
@@ -107,4 +155,9 @@ module.exports = {
   replaceInFile,
   addDependency,
   removeDependency,
+  ask,
+  askChoice,
+  readLaunchkit,
+  writeLaunchkit,
+  copyTemplateFiles,
 };

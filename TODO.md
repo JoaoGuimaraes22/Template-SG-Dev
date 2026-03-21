@@ -44,7 +44,7 @@
 
 ## New Templates / Sections
 
-- [ ] **Blank template** — minimal scaffold: `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `public/`, `dictionaries/` (if i18n), no sections or components — clean starting point for custom builds
+- [x] **Blank template** — minimal scaffold: `app/layout.tsx`, `app/page.tsx`, `app/globals.css`, `public/`, `dictionaries/` (if i18n), no sections or components — clean starting point for custom builds
 - [ ] Third template type — candidates: SaaS landing page, agency/studio, blog
 - [ ] Portfolio: optional Skills / Timeline / Education sections
 - [ ] Business: optional Gallery section and Google Maps embed

@@ -35,7 +35,20 @@ templates/
     dictionaries/         en.json, pt.json
     public/               hero.jpg
     BOOTSTRAP.md          Claude kickstart for business customization
+scripts/
+  lib.js                  Shared FS helpers + readline helpers (ask/askChoice) + .launchkit I/O
+  setup.js                Thin orchestrator — delegates to template module
+  toggle.js               Thin orchestrator — delegates to template module
+  reset.js                Removes everything setup.js copied
+  validate.js             Checks YOUR_* placeholders, TODO: TEMPLATE, images, .env.local
+  status.js               Read-only status display
+  templates/
+    portfolio.js          Portfolio module: setup(), featureList, detectState(), enable(), disable()
+    business.js           Business module: same interface + recolor()
+    blank.js              Blank module: setup() only (no toggleable features)
 ```
+
+**Adding a new template type** — create `scripts/templates/new-type.js` exporting `{ type, featureList, detectState, setup, enable, disable }`, add it to the `TEMPLATES` map in `setup.js` and `toggle.js`, and create `templates/new-type/` with the template files.
 
 ## File Structure (post-setup — portfolio)
 

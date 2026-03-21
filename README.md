@@ -5,9 +5,10 @@ A production-ready bootstrapper for multiple site types — personal portfolio a
 ## Project Types
 
 ```text
-node scripts/setup.js
-  → [1] Portfolio    — personal showcase with WebGL hero, sidebar, chatbot, project gallery
-  → [2] Business     — local business site with hero, services, reviews, FAQ, contact, footer
+npm run setup
+  → [1] Portfolio     — personal showcase with WebGL hero, sidebar, chatbot, project gallery
+  → [2] Business Site — local business with hero, services, reviews, FAQ, contact, footer
+  → [3] Blank         — minimal scaffold (layout + page + dictionaries), clean starting point
 ```
 
 ### Portfolio
@@ -58,6 +59,7 @@ Then paste the relevant bootstrap file into a Claude Code conversation:
 
 - **Portfolio** → `templates/portfolio/BOOTSTRAP.md`
 - **Business Site** → `templates/business/BOOTSTRAP.md`
+- **Blank** → `templates/blank/BOOTSTRAP.md`
 
 To enable or disable features after setup:
 
