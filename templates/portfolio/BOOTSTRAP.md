@@ -1,6 +1,6 @@
 # Portfolio Template — Claude Bootstrap Prompt
 
-**Paste this entire file into a new Claude Code conversation** opened in a generated project directory (created by `node scripts/setup.js --output <path>` from the launchkit tool).
+**Paste this entire file into a new Claude Code conversation** opened in a generated project directory (created by `node scripts/setup.js --name <name> --output <dir>` from the launchkit tool).
 
 ---
 

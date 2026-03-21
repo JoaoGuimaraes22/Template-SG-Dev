@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // launchkit — Setup Script
-// Run: node scripts/setup.js --output ../my-project
-// Selects a template type, copies base scaffold + template into the output directory,
+// Run: node scripts/setup.js --output ../ --name my-project
+// Selects a template type, creates <output>/<name>/ with base scaffold + template,
 // applies feature toggles, and runs npm install.
 
 const readline = require("readline");
@@ -16,11 +16,11 @@ const TEMPLATES = {
   blank:     require("./templates/blank"),
 };
 
-// ── Parse --output from argv ─────────────────────────────────────────────────
+// ── Parse flags from argv ────────────────────────────────────────────────────
 
-function parseOutputFlag() {
-  const idx = process.argv.indexOf("--output");
-  if (idx !== -1 && process.argv[idx + 1]) {
+function parseFlag(flag) {
+  const idx = process.argv.indexOf(flag);
+  if (idx !== -1 && process.argv[idx + 1] && !process.argv[idx + 1].startsWith("--")) {
     return process.argv[idx + 1];
   }
   return null;
@@ -49,34 +49,51 @@ async function main() {
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-  // ── Resolve output directory ────────────────────────────────────────────────
-  let outputPath = parseOutputFlag();
-  if (!outputPath) {
-    outputPath = await new Promise((resolve) => {
-      rl.question("Output directory (e.g. ../my-project): ", (answer) => {
+  // ── Resolve project name ───────────────────────────────────────────────────
+  let projectName = parseFlag("--name");
+  if (!projectName) {
+    projectName = await new Promise((resolve) => {
+      rl.question("Project name (e.g. my-project): ", (answer) => {
         resolve(answer.trim());
       });
     });
   }
 
-  if (!outputPath) {
-    console.error("\n  Error: output directory is required.\n  Usage: node scripts/setup.js --output ../my-project\n");
+  if (!projectName) {
+    console.error("\n  Error: project name is required.\n  Usage: node scripts/setup.js --name my-project\n");
     rl.close();
     process.exit(1);
   }
 
-  const absOutput = path.resolve(outputPath);
+  // ── Resolve output directory ────────────────────────────────────────────────
+  let outputDir = parseFlag("--output");
+  if (!outputDir) {
+    outputDir = await new Promise((resolve) => {
+      rl.question("Output directory (e.g. ../): ", (answer) => {
+        resolve(answer.trim());
+      });
+    });
+  }
+
+  if (!outputDir) {
+    console.error("\n  Error: output directory is required.\n  Usage: node scripts/setup.js --output ../ --name my-project\n");
+    rl.close();
+    process.exit(1);
+  }
+
+  const absOutput = path.resolve(outputDir, projectName);
   setTarget(absOutput);
 
   if (fs.existsSync(path.join(absOutput, ".launchkit"))) {
-    console.error(`\n  Error: ${outputPath} already contains a .launchkit file.`);
+    console.error(`\n  Error: ${absOutput} already contains a .launchkit file.`);
     console.error("  Run reset first, or choose a different directory.\n");
     rl.close();
     process.exit(1);
   }
 
   fs.mkdirSync(absOutput, { recursive: true });
-  console.log(`▸  Output: ${absOutput}\n`);
+  console.log(`▸  Project: ${projectName}`);
+  console.log(`▸  Output:  ${absOutput}\n`);
 
   // ── Resolve template type from argv or prompt ──────────────────────────────
   const typeFlags = ["--portfolio", "--business", "--blank"];
@@ -120,7 +137,7 @@ async function main() {
     console.warn("  npm install encountered warnings — check output above.");
   }
 
-  writeLaunchkit({ type: result.type, features: result.features });
+  writeLaunchkit({ name: projectName, type: result.type, features: result.features });
   console.log("  [created] .launchkit");
 
   const relOutput = path.relative(process.cwd(), absOutput);

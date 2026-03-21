@@ -26,21 +26,21 @@ No `npm install` needed — launchkit is a generator tool with no dependencies o
 ### 2. Generate a project
 
 ```bash
-node scripts/setup.js --output ../my-project
+node scripts/setup.js --name my-project --output ../
 ```
 
-Skip the type-selection prompt with a flag:
+This creates `../my-project/` with the full Next.js project inside. Skip the type-selection prompt with a flag:
 
 ```bash
-node scripts/setup.js --output ../my-project --portfolio
-node scripts/setup.js --output ../my-project --business
-node scripts/setup.js --output ../my-project --blank
+node scripts/setup.js --name my-project --output ../ --portfolio
+node scripts/setup.js --name my-project --output ../ --business
+node scripts/setup.js --name my-project --output ../ --blank
 ```
 
-Or use the npm shorthand (will prompt for output path interactively):
+Or use the npm shorthand (will prompt for name and output path interactively):
 
 ```bash
-npm run setup              # interactive type + output selection
+npm run setup              # interactive name + type + output selection
 npm run setup:portfolio    # skip type selection
 npm run setup:business     # skip type selection
 npm run setup:blank        # skip type selection
@@ -74,6 +74,7 @@ The script creates a standalone Next.js project at the output path: copies the b
 
 ```json
 {
+  "name": "my-project",
   "type": "portfolio",
   "features": {
     "i18n": true,
@@ -197,16 +198,16 @@ This checks for unreplaced `YOUR_*` placeholders, `// TODO: TEMPLATE` comments, 
 
 ### Tool scripts (run from launchkit/)
 
-| Script                                                     | What it does                                                   |
-| ---------------------------------------------------------- | -------------------------------------------------------------- |
-| `node scripts/setup.js --output <path>`                    | Generate a new project at the given path                       |
-| `node scripts/setup.js --output <path> --portfolio`        | Skip type selection, go straight to portfolio feature prompts  |
-| `node scripts/setup.js --output <path> --business`         | Skip type selection, go straight to business site prompts      |
-| `node scripts/setup.js --output <path> --blank`            | Skip type selection, go straight to blank template setup       |
-| `node scripts/toggle.js --project <path>`                  | Enable/disable individual features without a full reset        |
-| `node scripts/status.js --project <path>`                  | Print current template type and feature state (read-only)      |
-| `node scripts/reset.js --project <path>`                   | Remove everything setup added; restore base scaffold           |
-| `node scripts/validate.js --project <path>`                | Check for unreplaced placeholders and TODO comments            |
+| Script | What it does |
+| --- | --- |
+| `node scripts/setup.js --name <name> --output <dir>` | Create `<dir>/<name>/` with a new project |
+| `node scripts/setup.js --name <name> --output <dir> --portfolio` | Skip type selection, go straight to portfolio feature prompts |
+| `node scripts/setup.js --name <name> --output <dir> --business` | Skip type selection, go straight to business site prompts |
+| `node scripts/setup.js --name <name> --output <dir> --blank` | Skip type selection, go straight to blank template setup |
+| `node scripts/toggle.js --project <path>` | Enable/disable individual features without a full reset |
+| `node scripts/status.js --project <path>` | Print current template type and feature state (read-only) |
+| `node scripts/reset.js --project <path>` | Remove everything setup added; restore base scaffold |
+| `node scripts/validate.js --project <path>` | Check for unreplaced placeholders and TODO comments |
 
 ### Project scripts (run from generated project/)
 

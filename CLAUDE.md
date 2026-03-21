@@ -1,6 +1,6 @@
 # launchkit — Portfolio · Business Site Generator
 
-**Generator tool** — `node scripts/setup.js --output ../my-project` creates a standalone Next.js project in an external directory. The tool repo stays clean; generated projects are self-contained apps with a `.launchkit` context file that the tool reads for toggle/reset/validate/status operations via `--project`.
+**Generator tool** — `node scripts/setup.js --name my-project --output ../` creates a standalone Next.js project at `../my-project/`. The tool repo stays clean; generated projects are self-contained apps with a `.launchkit` context file that the tool reads for toggle/reset/validate/status operations via `--project`.
 
 All sections below describe the **post-setup** state of a generated project.
 
@@ -220,18 +220,18 @@ Dict: `services.items[].details: string[]` (added) — bullet points shown in mo
 
 ## Scripts (run from tool repo)
 
-All scripts are run from the launchkit tool directory. Setup uses `--output` to specify where to create a project. All other scripts use `--project` to operate on an existing generated project.
+All scripts are run from the launchkit tool directory. Setup uses `--name` + `--output` to create a project folder. All other scripts use `--project` to operate on an existing generated project.
 
-| Script         | Command                                                    | What it does                                                             |
-| -------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Setup          | `node scripts/setup.js --output ../my-project`             | Create project: select template, toggle features, copy scaffold, install |
-| Setup (direct) | `node scripts/setup.js --output ../my-project --portfolio` | Skip type-selection prompt, go straight to feature selection             |
-| Toggle         | `node scripts/toggle.js --project ../my-project`           | Enable/disable individual features without full reset                    |
-| Reset          | `node scripts/reset.js --project ../my-project`            | Remove everything setup.js copied; restore base scaffold state           |
-| Validate       | `node scripts/validate.js --project ../my-project`         | Check for unreplaced `YOUR_*` placeholders + `TODO: TEMPLATE` comments   |
-| Status         | `node scripts/status.js --project ../my-project`           | Read-only status display of template type and feature state              |
-| Dialogflow gen | `node dialogflow/generate.js` (from generated project)     | Regenerate `intents/` from `generate.js` source (portfolio only)         |
-| Dialogflow zip | `node dialogflow/zip.js` (from generated project)          | Bundle `intents/` into `portfolio-agent.zip` for Dialogflow import       |
+| Script         | Command                                                            | What it does                                                             |
+| -------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| Setup          | `node scripts/setup.js --name my-project --output ../`             | Create project: select template, toggle features, copy scaffold, install |
+| Setup (direct) | `node scripts/setup.js --name my-project --output ../ --portfolio` | Skip type-selection prompt, go straight to feature selection             |
+| Toggle         | `node scripts/toggle.js --project ../my-project`                   | Enable/disable individual features without full reset                    |
+| Reset          | `node scripts/reset.js --project ../my-project`                    | Remove everything setup.js copied; restore base scaffold state           |
+| Validate       | `node scripts/validate.js --project ../my-project`                 | Check for unreplaced `YOUR_*` placeholders + `TODO: TEMPLATE` comments   |
+| Status         | `node scripts/status.js --project ../my-project`                   | Read-only status display of template type and feature state              |
+| Dialogflow gen | `node dialogflow/generate.js` (from generated project)             | Regenerate `intents/` from `generate.js` source (portfolio only)         |
+| Dialogflow zip | `node dialogflow/zip.js` (from generated project)                  | Bundle `intents/` into `portfolio-agent.zip` for Dialogflow import       |
 
 > If `--project` is omitted, scripts fall back to the current working directory — so running from inside a generated project also works. **Dialogflow workflow**: edit `generate.js` (look for `// EDIT:` comments) → `node dialogflow/generate.js` → `node dialogflow/zip.js` → import zip in Dialogflow console. Never edit `intents/` directly.
 
@@ -271,7 +271,7 @@ All scripts are run from the launchkit tool directory. Setup uses `--output` to 
 
 ## Template & Bootstrap
 
-Run `node scripts/setup.js --output ../my-project` from the tool repo to generate a new project. Then paste the relevant BOOTSTRAP.md into a Claude Code conversation (opened in the generated project) to fill in content.
+Run `node scripts/setup.js --name my-project --output ../` from the tool repo to generate a new project at `../my-project/`. Then paste the relevant BOOTSTRAP.md into a Claude Code conversation (opened in the generated project) to fill in content.
 
 - **Portfolio** → `templates/portfolio/BOOTSTRAP.md`
 - **Business Site** → `templates/business/BOOTSTRAP.md`
@@ -294,6 +294,7 @@ Personal content uses these sentinel strings — grep for them in the generated 
 
 ```json
 {
+  "name": "my-project",
   "type": "portfolio",
   "features": {
     "i18n": true,
