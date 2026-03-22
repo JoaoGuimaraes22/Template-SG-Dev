@@ -1,0 +1,34 @@
+{
+  "_niche": "Landscaping & Lawn Care",
+  "_usage": "node scripts/personalize.js --project ../my-site --profile configs/niche-profiles/landscaping.json",
+  "_note": "Replace placeholder values with real client details before sending.",
+
+  "BUSINESS": "YOUR_BUSINESS",
+  "PHONE": "YOUR_PHONE",
+  "EMAIL": "YOUR_EMAIL",
+  "ADDRESS": "YOUR_ADDRESS",
+  "WHATSAPP_NUMBER": "YOUR_WHATSAPP_NUMBER",
+  "DOMAIN": "YOUR_DOMAIN",
+
+  "_content_hints": {
+    "hero_line1": "Beautiful Outdoor Spaces",
+    "hero_line2": "Built to Last",
+    "hero_tagline": "From lawn maintenance to full garden design — we make your property stand out.",
+    "services": [
+      "Lawn Mowing & Edging",
+      "Garden Design & Planting",
+      "Tree Trimming & Removal",
+      "Irrigation System Installation",
+      "Patio & Pathway Design",
+      "Seasonal Cleanup & Mulching"
+    ],
+    "faq_samples": [
+      "How often should I have my lawn mowed?",
+      "Do you offer free design consultations?",
+      "Can you work with my HOA requirements?",
+      "Do you handle permits for large landscaping projects?",
+      "Are you licensed and insured?",
+      "Do you offer maintenance contracts?"
+    ]
+  }
+}

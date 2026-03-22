@@ -14,6 +14,12 @@ scripts/
                       detectInstalledSections, detectInstalledComponents, parseSectionsFromPage, LOCALES
   collapse.js         Shared i18n collapse helpers for components: collapseChatWidgetTsx, collapseChatNudgeTsx
   setup.js            --name + --output → create project, delegate to template module, then preset prompt
+  personalize.js      --project → replace YOUR_* placeholders interactively or from --profile client.json
+                      Template-aware (business: BUSINESS/PHONE/EMAIL/ADDRESS/WHATSAPP_NUMBER/DOMAIN;
+                      portfolio: NAME/EMAIL/GITHUB/LINKEDIN/DOMAIN/CITY/TIMEZONE). Saves client-profile.json.
+                      Accepts Apify envelope { "result": { ... } }. Idempotent — safe to re-run after adding sections.
+  deploy.js           --project → build + deploy to Vercel or Netlify (auto-detected). Stores live URL in .launchkit.
+                      --platform vercel|netlify to force. --no-build to skip npm run build.
   config.js           --project → project-wide settings (palette, accent color recolor)
   sections.js         --project → add/remove/status for all sections (universal, all templates)
   components.js       --project → add/remove/status for UI atoms (Button, Card, etc.)
@@ -33,6 +39,10 @@ configs/
   palettes/           Live configs — changeable post-setup via config.js
     default/          bg:#fafafa fg:#111111 accent:indigo (baseline)
     midnight/         bg:#0c0c0f fg:#f4f4f5 accent:violet
+  niche-profiles/     Starter JSON profiles for personalize.js --profile (niche-appropriate content hints)
+    hvac.json         HVAC/heating/cooling services starter
+    cleaning.json     Commercial & residential cleaning starter
+    landscaping.json  Landscaping & lawn care starter
 templates/
   presets/
     base/             Clean Next.js scaffold + i18n infrastructure (i18n-config.ts, get-dictionary.ts, proxy.ts)
@@ -51,6 +61,8 @@ templates/
     sidebar/default/         ProfileSidebar sticky desktop layout with hooks
     webgl-hero/default/      HeroFull shader/parallax hero, swaps Hero ↔ HeroFull
     whatsapp/default/        WhatsApp button in Contact + FloatingCTA via markers
+    booking/calendly/        Calendly inline embed; YOUR_CALENDLY_URL placeholder; no npm deps
+    google-reviews/default/  Google review CTA with star display; YOUR_GOOGLE_REVIEW_URL placeholder
   components/         UI atom library — each component has variants with component.tsx + meta.json
     button/primary/   Primary CTA button (solid + outline, sized, accent-aware)
 ```
@@ -69,6 +81,8 @@ All scripts support `--help`. If `--project` is omitted, scripts fall back to cw
 
 **Adding a live config (palette-style):** create `configs/[category]/[name]/meta.json` following the palette schema for that category. Add a `load[Category]()` discovery function to `lib.js` (mirrors `loadPalettes()`). Wire it into `config.js` as a new menu option. Live configs can be changed post-setup at any time.
 
+**Adding a niche profile:** create `configs/niche-profiles/[niche].json` with `BUSINESS`, `PHONE`, `EMAIL`, `ADDRESS`, `WHATSAPP_NUMBER`, `DOMAIN` keys (use placeholder strings as values), and an optional `_content_hints` object with niche-appropriate service names, FAQ samples, hero copy, etc. Pass with `personalize.js --profile configs/niche-profiles/[niche].json`. The `_*` prefixed keys are ignored by `personalize.js`.
+
 ## Generated Project Config
 
 - **Middleware**: `proxy.ts` (NOT `middleware.ts`) — rewrites for single locale (clean URLs), redirects for multi-locale
@@ -84,6 +98,8 @@ All sections (template-native and library) are detected by `detectInstalledSecti
 
 **Business sections:** `contact-form` → `app/api/contact/route.ts`, `floating-cta` → `{compDir}/FloatingCTA.tsx`, `whatsapp` → custom (content-based)
 
+**Universal upsell sections:** `booking` → `{compDir}/Booking.tsx`, `google-reviews` → `{compDir}/GoogleReviews.tsx`
+
 Components live in `app/[locale]/components/`.
 
 ## .launchkit
@@ -93,7 +109,7 @@ Components live in `app/[locale]/components/`.
   "version": 1,
   "name": "my-project",
   "type": "portfolio",
-  "features": { "languages": "en+pt", "accentColor": "indigo", "palette": "default" },
+  "features": { "languages": "en+pt", "accentColor": "indigo", "palette": "default", "deployUrl": "https://my-project.vercel.app" },
   "sections": {
     "webgl-hero":   { "variant": "default",   "addedAt": "2026-03-21T..." },
     "chatbot":      { "variant": "default",   "addedAt": "2026-03-21T..." },
@@ -109,7 +125,7 @@ Components live in `app/[locale]/components/`.
 }
 ```
 
-`features`: `languages` (`"en"`, `"pt"`, or `"en+pt"`), `accentColor` (Tailwind token, all templates), `palette` (named palette, default: "default"). `sections` is always `{}` after template setup — populated by presets or `sections.js`. `components` tracks installed UI atoms from `components.js`. File-based detection is authoritative. Do not delete this file.
+`features`: `languages` (`"en"`, `"pt"`, or `"en+pt"`), `accentColor` (Tailwind token, all templates), `palette` (named palette, default: "default"), `deployUrl` (written by `deploy.js` after a successful deployment). `sections` is always `{}` after template setup — populated by presets or `sections.js`. `components` tracks installed UI atoms from `components.js`. File-based detection is authoritative. Do not delete this file.
 
 ## Section Library
 
@@ -179,7 +195,11 @@ Grep for these in generated projects:
 - `YOUR_NAME`, `YOUR_EMAIL`, `YOUR_GITHUB`, `YOUR_LINKEDIN`, `YOUR_DOMAIN`
 - `YOUR_CITY`, `YOUR_TIMEZONE` (portfolio ProfileSidebar)
 - `YOUR_BUSINESS`, `YOUR_PHONE`, `YOUR_WHATSAPP_NUMBER`, `YOUR_ADDRESS` (business)
+- `YOUR_CALENDLY_URL` (booking/calendly section)
+- `YOUR_GOOGLE_REVIEW_URL` (google-reviews section)
 - `// TODO: TEMPLATE` — marks manual Claude cleanup needed
+
+Use `node scripts/personalize.js --project <path>` to replace all `YOUR_*` placeholders interactively or via `--profile client.json`. The script is template-aware, idempotent, and re-scans component files dynamically so it picks up new placeholders added by sections installed after initial setup.
 
 ## Dictionary Shapes
 

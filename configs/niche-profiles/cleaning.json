@@ -1,0 +1,34 @@
+{
+  "_niche": "Commercial & Residential Cleaning",
+  "_usage": "node scripts/personalize.js --project ../my-site --profile configs/niche-profiles/cleaning.json",
+  "_note": "Replace placeholder values with real client details before sending.",
+
+  "BUSINESS": "YOUR_BUSINESS",
+  "PHONE": "YOUR_PHONE",
+  "EMAIL": "YOUR_EMAIL",
+  "ADDRESS": "YOUR_ADDRESS",
+  "WHATSAPP_NUMBER": "YOUR_WHATSAPP_NUMBER",
+  "DOMAIN": "YOUR_DOMAIN",
+
+  "_content_hints": {
+    "hero_line1": "Spotless Spaces,",
+    "hero_line2": "Every Time",
+    "hero_tagline": "Professional cleaning services for homes and offices — reliable, thorough, and fully insured.",
+    "services": [
+      "Regular Home Cleaning",
+      "Deep Cleaning & Spring Clean",
+      "Move-In / Move-Out Cleaning",
+      "Office & Commercial Cleaning",
+      "Post-Construction Cleanup",
+      "Carpet & Upholstery Cleaning"
+    ],
+    "faq_samples": [
+      "Do I need to be home during the cleaning?",
+      "What cleaning products do you use?",
+      "How do I book a recurring clean?",
+      "Do you bring your own equipment?",
+      "Are your cleaners background-checked?",
+      "What is your cancellation policy?"
+    ]
+  }
+}

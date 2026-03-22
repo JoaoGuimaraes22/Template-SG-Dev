@@ -1,0 +1,16 @@
+{
+  "componentName": "GoogleReviews",
+  "dictKey": "googleReviews",
+  "navLink": null,
+  "templates": ["portfolio", "business"],
+  "defaultAfter": "reviews",
+  "pageSection": true,
+  "props": {
+    "i18n": "googleReviews={dict.googleReviews}",
+    "collapsed": "googleReviews={dict.googleReviews}"
+  },
+  "collapsePatches": [],
+  "accentColorToken": "indigo",
+  "dependencies": [],
+  "extraFiles": []
+}
