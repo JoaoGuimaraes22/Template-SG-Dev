@@ -3,7 +3,7 @@
   "dictKey": null,
   "navLink": null,
   "pageSection": false,
-  "templates": ["portfolio"],
+  "templates": ["portfolio", "business"],
   "defaultAfter": null,
   "props": {},
   "collapsePatches": [],

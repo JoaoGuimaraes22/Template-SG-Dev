@@ -5,8 +5,8 @@
     "id": "testimonials",
     "label": { "en": "Reviews", "pt": "Avaliações" }
   },
-  "templates": ["portfolio"],
-  "defaultAfter": "work",
+  "templates": ["portfolio", "business"],
+  "defaultAfter": "projects",
   "props": {
     "i18n": "reviews={dict.reviews}",
     "collapsed": "reviews={dict.reviews}"

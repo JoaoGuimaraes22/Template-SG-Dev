@@ -4,7 +4,7 @@
   "navLink": null,
   "pageSection": false,
   "detectFile": "app/api/chat/route.ts",
-  "templates": ["portfolio"],
+  "templates": ["portfolio", "business"],
   "defaultAfter": null,
   "props": {},
   "collapsePatches": [],
