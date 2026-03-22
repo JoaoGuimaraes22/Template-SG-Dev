@@ -1,13 +1,9 @@
 #!/usr/bin/env node
 // launchkit — Blank template module
-// Minimal scaffold: only i18n is selectable.
+// Owns: template file copy + i18n collapse logic.
+// i18n feature toggle is prompted and applied by setup.js via configs/setup/i18n/.
 
-const fs = require("fs");
-const path = require("path");
 const {
-  target,
-  ask,
-  copyDir,
   copyDirInProject,
   copyFileInProject,
   copyTemplateFiles,
@@ -29,35 +25,12 @@ function collapseI18n() {
   console.log("\n✓  i18n routing collapsed — app/ is now locale-free");
 }
 
-// ── Interactive setup ─────────────────────────────────────────────────────────
+// ── Template file copy ────────────────────────────────────────────────────────
 
-async function setup(rl) {
-  console.log("\n─── Blank — Feature Selection ──────────────────────────────────\n");
-
-  const features = {
-    i18n: await ask(rl, "[1/1] Include i18n (bilingual /en /pt routing)?"),
-  };
-
+async function setup() {
   console.log(`\n─── Copying blank template ─────────────────────────────────────────\n`);
   copyTemplateFiles(TYPE);
-
-  console.log("\n─── Applying blank template selections ──────────────────────────\n");
-
-  if (features.i18n) {
-    console.log("✓  i18n: enabled");
-    copyDir("templates/presets/blank/root", ".");
-  } else {
-    console.log("⚙  i18n: disabled");
-    fs.writeFileSync(
-      path.join(target(), "app/sitemap.ts"),
-      `import type { MetadataRoute } from "next";\n\nconst SITE_URL = "https://YOUR_DOMAIN";\n\nexport default function sitemap(): MetadataRoute.Sitemap {\n  return [{ url: SITE_URL, lastModified: new Date() }];\n}\n`,
-      "utf8"
-    );
-    console.log("  [patched] sitemap.ts — simplified (no i18n)");
-    collapseI18n();
-  }
-
-  return { type: TYPE, features: { i18n: features.i18n }, sections: {} };
+  return { type: TYPE, sections: {} };
 }
 
-module.exports = { type: TYPE, setup };
+module.exports = { type: TYPE, setup, collapseI18n };

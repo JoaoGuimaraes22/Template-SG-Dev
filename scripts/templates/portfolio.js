@@ -1,21 +1,16 @@
 #!/usr/bin/env node
 // launchkit — Portfolio template module
-// Owns: setup flow (i18n only), i18n collapse for core layout components.
+// Owns: template file copy + i18n collapse logic.
+// i18n feature toggle is prompted and applied by setup.js via configs/setup/i18n/.
 // Optional sections (chatbot, sidebar, work, testimonials, webgl-hero, contact-form)
 // are managed via sections.js / presets — not bundled here.
 
-const fs = require("fs");
-const path = require("path");
 const {
-  target,
-  ask,
-  copyDir,
   copyTemplateFiles,
   deleteIfExists,
   removeLineContaining,
   replaceInFile,
   collapseI18nBase,
-  LOCALES_TS_LITERAL,
 } = require("../lib");
 
 const TYPE = "portfolio";
@@ -23,6 +18,9 @@ const TYPE = "portfolio";
 // ── Full i18n collapse (app/[locale]/ → app/) ─────────────────────────────────
 
 function collapseI18n() {
+  // Remove i18n-only components before collapse so they aren't copied to app/components/
+  deleteIfExists("app/[locale]/components/LanguageSwitcher.tsx");
+  deleteIfExists("app/[locale]/components/LangSetter.tsx");
   collapseI18nBase({}, {
     pageFnName: "LocalePage",
     beforePatchLayout() {
@@ -47,33 +45,12 @@ function collapseI18n() {
   });
 }
 
-// ── Interactive setup ─────────────────────────────────────────────────────────
+// ── Template file copy ────────────────────────────────────────────────────────
 
-async function setup(rl) {
-  console.log("\n─── Portfolio — Setup ──────────────────────────────────────────\n");
-
-  const i18n = await ask(rl, "[1/1] Include i18n (multi-language /en /pt routing)?");
-
-  console.log(`\n─── Copying portfolio template ─────────────────────────────────\n`);
+async function setup() {
+  console.log("\n─── Copying portfolio template ─────────────────────────────────\n");
   copyTemplateFiles(TYPE);
-
-  if (i18n) {
-    console.log("✓  i18n: enabled");
-    copyDir("templates/presets/portfolio/root", ".");
-  } else {
-    console.log("⚙  i18n: disabled");
-    deleteIfExists("app/[locale]/components/LanguageSwitcher.tsx");
-    deleteIfExists("app/[locale]/components/LangSetter.tsx");
-    fs.writeFileSync(
-      path.join(target(), "app/sitemap.ts"),
-      `import type { MetadataRoute } from "next";\n\nconst SITE_URL = "https://YOUR_DOMAIN";\n\nexport default function sitemap(): MetadataRoute.Sitemap {\n  return [{ url: SITE_URL, lastModified: new Date() }];\n}\n`,
-      "utf8"
-    );
-    console.log("  [created] sitemap.ts");
-    collapseI18n();
-  }
-
-  return { type: TYPE, features: { i18n }, sections: {} };
+  return { type: TYPE, sections: {} };
 }
 
-module.exports = { type: TYPE, setup };
+module.exports = { type: TYPE, setup, collapseI18n };

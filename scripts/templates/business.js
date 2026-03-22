@@ -1,15 +1,11 @@
 #!/usr/bin/env node
 // launchkit — Business Site template module
-// Owns: setup flow (i18n + accent color only), i18n collapse for core layout components.
+// Owns: template file copy, accent color setup, i18n collapse logic.
+// i18n feature toggle is prompted and applied by setup.js via configs/setup/i18n/.
 // Optional sections (contact-form, floating-cta, whatsapp) are managed via sections.js / presets.
 
-const fs = require("fs");
-const path = require("path");
 const {
-  target,
-  ask,
   askChoice,
-  copyDir,
   copyTemplateFiles,
   deleteIfExists,
   removeLineContaining,
@@ -46,6 +42,9 @@ function recolor(fromColor, toColor, compDir, layoutFile) {
 // ── Full i18n collapse (app/[locale]/ → app/) ─────────────────────────────────
 
 function collapseI18n() {
+  // Remove i18n-only components before collapse so they aren't copied to app/components/
+  deleteIfExists("app/[locale]/components/LanguageSwitcher.tsx");
+  deleteIfExists("app/[locale]/components/LangSetter.tsx");
   collapseI18nBase(null, {
     pageFnName: "BusinessPage",
     beforePatchLayout() {
@@ -67,31 +66,16 @@ function collapseI18n() {
   });
 }
 
-// ── Interactive setup ─────────────────────────────────────────────────────────
+// ── Template file copy + accent color ─────────────────────────────────────────
 
 async function setup(rl) {
   console.log("\n─── Business Site — Setup ──────────────────────────────────────\n");
 
-  const i18n = await ask(rl, "[1/2] Include i18n (bilingual /en /pt routing)?");
-  const colorChoice = await askChoice(rl, "[2/2] Brand accent color?", COLOR_LABELS);
+  const colorChoice = await askChoice(rl, "[1/1] Brand accent color?", COLOR_LABELS);
   const accentColor = COLOR_MAP[(colorChoice ?? 1) - 1];
 
   console.log(`\n─── Copying business template ──────────────────────────────────────\n`);
   copyTemplateFiles(TYPE);
-
-  if (i18n) {
-    console.log("✓  i18n: enabled");
-    copyDir("templates/presets/business/root", ".");
-  } else {
-    console.log("⚙  i18n: disabled");
-    fs.writeFileSync(
-      path.join(target(), "app/sitemap.ts"),
-      `import type { MetadataRoute } from "next";\n\nconst SITE_URL = "https://YOUR_DOMAIN";\n\nexport default function sitemap(): MetadataRoute.Sitemap {\n  return [{ url: SITE_URL, lastModified: new Date() }];\n}\n`,
-      "utf8"
-    );
-    console.log("  [created] sitemap.ts");
-    collapseI18n();
-  }
 
   if (accentColor !== "indigo") {
     console.log(`\n─── Replacing accent color: indigo → ${accentColor} ──────────────────\n`);
@@ -111,7 +95,7 @@ async function setup(rl) {
   }
   console.log(`✓  Accent color: ${accentColor}`);
 
-  return { type: TYPE, features: { i18n, accentColor }, sections: {} };
+  return { type: TYPE, features: { accentColor }, sections: {} };
 }
 
-module.exports = { type: TYPE, setup, recolor, COLOR_MAP, COLOR_LABELS };
+module.exports = { type: TYPE, setup, collapseI18n, recolor, COLOR_MAP, COLOR_LABELS };

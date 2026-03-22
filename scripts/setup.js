@@ -8,7 +8,7 @@ const readline = require("readline");
 const fs = require("fs");
 const path = require("path");
 const { execSync, spawnSync } = require("child_process");
-const { TOOL_ROOT, setTarget, target, askChoice, writeLaunchkit, copyBaseScaffold, checkHelp, loadTemplates, loadPresets } = require("./lib");
+const { TOOL_ROOT, setTarget, target, ask, askChoice, writeLaunchkit, copyBaseScaffold, checkHelp, loadTemplates, loadPresets, loadSetupConfigs } = require("./lib");
 
 checkHelp(`
 launchkit — Setup
@@ -175,12 +175,38 @@ async function main() {
   console.log("\n─── Copying base scaffold ──────────────────────────────────────\n");
   copyBaseScaffold();
 
-  // ── Run template setup ─────────────────────────────────────────────────────
+  // ── Prompt for setup configs ───────────────────────────────────────────────
   const tmpl = TEMPLATES[templateKey];
+  const setupConfigs = loadSetupConfigs().filter(
+    (c) => !c.templates || c.templates.includes(tmpl.type)
+  );
+  const configAnswers = {};
+  if (setupConfigs.length > 0) {
+    console.log("\n─── Project configuration ──────────────────────────────────────\n");
+  }
+  for (const config of setupConfigs) {
+    if (config.type === "boolean") {
+      configAnswers[config.key] = await ask(rl, config.prompt);
+    }
+  }
+
+  // ── Run template setup (copies template files + template-specific prompts) ─
   const result = await tmpl.setup(rl);
 
+  // ── Apply setup config hooks ───────────────────────────────────────────────
+  const lib = require("./lib");
+  const ctx = { projectType: result.type, tmpl, lib };
+  for (const config of setupConfigs) {
+    if (config.hooks?.apply) {
+      await config.hooks.apply({ ...ctx, enabled: configAnswers[config.key] });
+    }
+  }
+
+  // ── Build features + write .launchkit ─────────────────────────────────────
+  const features = { ...configAnswers, ...(result.features || {}) };
+
   // Write initial .launchkit now so preset sections.js child processes can read/update it
-  writeLaunchkit({ name: projectName, type: result.type, features: result.features, sections: {} });
+  writeLaunchkit({ name: projectName, type: result.type, features, sections: {} });
   console.log("  [created] .launchkit");
 
   // ── Preset selection ───────────────────────────────────────────────────────
@@ -247,7 +273,7 @@ async function main() {
   generateEnvExample(result.type, finalState.sections || {});
 
   const relOutput = path.relative(process.cwd(), absOutput);
-  const bootstrapFile = path.join(TOOL_ROOT, `templates/${result.type}/BOOTSTRAP.md`);
+  const bootstrapFile = path.join(TOOL_ROOT, `templates/presets/${result.type}/BOOTSTRAP.md`);
   const relBootstrap = path.relative(process.cwd(), bootstrapFile);
 
   console.log("\n╔══════════════════════════════════════════════════════════════╗");
@@ -261,10 +287,9 @@ async function main() {
   console.log("║  4. Replace placeholder images in public/                    ║");
   console.log("║  5. npm run dev  →  preview your site                        ║");
   console.log("╚══════════════════════════════════════════════════════════════╝\n");
-  console.log(`  To manage sections later:`);
-  console.log(`    node scripts/sections.js --project ${relOutput}`);
-  console.log(`  To change project config (i18n, accent color):`);
-  console.log(`    node scripts/config.js --project ${relOutput}\n`);
+  console.log(`  To manage sections:    node scripts/sections.js --project ${relOutput}`);
+  console.log(`  To manage components:  node scripts/components.js --project ${relOutput}`);
+  console.log(`  To change config:      node scripts/config.js --project ${relOutput}\n`);
 }
 
 main().catch((err) => {

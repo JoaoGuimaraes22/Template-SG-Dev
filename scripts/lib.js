@@ -520,6 +520,30 @@ function loadPalettes() {
   return (_paletteCache = palettes);
 }
 
+// ── Setup config discovery ────────────────────────────────────────────────────
+
+let _setupConfigCache = null;
+
+// Scans configs/setup/[name]/ for setup-time config definitions.
+// Returns [{ ...meta, hooks: { apply? } }].
+function loadSetupConfigs() {
+  if (_setupConfigCache) return _setupConfigCache;
+  const root = path.join(TOOL_ROOT, "configs", "setup");
+  if (!fs.existsSync(root)) return (_setupConfigCache = []);
+  const configs = [];
+  for (const name of fs.readdirSync(root)) {
+    const dir = path.join(root, name);
+    if (!fs.statSync(dir).isDirectory()) continue;
+    const metaPath = path.join(dir, "meta.json");
+    if (!fs.existsSync(metaPath)) continue;
+    const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+    const hooksPath = path.join(dir, "hooks.js");
+    const hooks = fs.existsSync(hooksPath) ? require(hooksPath) : {};
+    configs.push({ ...meta, hooks });
+  }
+  return (_setupConfigCache = configs);
+}
+
 // ── Component discovery ───────────────────────────────────────────────────────
 
 let _componentCache = null;
@@ -735,6 +759,7 @@ module.exports = {
   removeNavLink,
   loadTemplates,
   loadPresets,
+  loadSetupConfigs,
   loadPalettes,
   discoverComponents,
   detectInstalledComponents,

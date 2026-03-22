@@ -10,8 +10,8 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind CSS v4 · Framer Mot
 scripts/
   lib.js              Shared helpers: FS ops, .launchkit I/O, collapseI18nBase, marker utilities
                       (extractBetweenMarkers, removeMarkerBlock), loadTemplates, loadPresets,
-                      loadPalettes, discoverSections, discoverComponents, detectInstalledSections,
-                      detectInstalledComponents, parseSectionsFromPage, LOCALES
+                      loadSetupConfigs, loadPalettes, discoverSections, discoverComponents,
+                      detectInstalledSections, detectInstalledComponents, parseSectionsFromPage, LOCALES
   collapse.js         Shared i18n collapse helpers for components: collapseChatWidgetTsx, collapseChatNudgeTsx
   setup.js            --name + --output → create project, delegate to template module, then preset prompt
   config.js           --project → project-wide settings (i18n display, palette, accent color recolor)
@@ -21,14 +21,16 @@ scripts/
   validate.js         --project → check YOUR_* placeholders, TODOs, images, .env.local
   status.js           --project → read-only project state + installed sections
   templates/
-    portfolio.js      setup() → i18n only → returns { type, features: { i18n }, sections: {} }
-    business.js       setup() + recolor(), COLOR_MAP, COLOR_LABELS → returns { type, features: { i18n, accentColor }, sections: {} }
-    blank.js          setup() → minimal (i18n only)
+    portfolio.js      setup() → copies template files → returns { type, sections: {} }; exports collapseI18n
+    business.js       setup() → copies files + accent color prompt → returns { type, features: { accentColor }, sections: {} }; exports collapseI18n, recolor, COLOR_MAP, COLOR_LABELS
+    blank.js          setup() → copies template files → returns { type, sections: {} }; exports collapseI18n
   presets/
     portfolio.js      Full portfolio preset: webgl-hero, chatbot, contact-form, testimonials, work, sidebar
     business.js       Full business preset: contact-form, floating-cta, whatsapp
 configs/
-  palettes/           Named design themes (bg + fg + accent together) — auto-discovered by loadPalettes()
+  setup/              Setup-time configs — prompted during project creation, baked into file structure
+    i18n/             Multi-language routing toggle — hooks.js apply(ctx) handles copy/collapse
+  palettes/           Live configs — changeable post-setup via config.js
     default/          bg:#fafafa fg:#111111 accent:indigo (baseline)
     midnight/         bg:#0c0c0f fg:#f4f4f5 accent:violet
 templates/
@@ -63,7 +65,9 @@ All scripts support `--help`. If `--project` is omitted, scripts fall back to cw
 
 **Adding a component:** create `templates/components/[name]/[variant]/` with `component.tsx` and `meta.json`. Components are atomic UI atoms (Button, Card, Modal, etc.) with no page injection, no dict keys, no nav links. Auto-discovered by `discoverComponents()`. `meta.json` needs only `componentName`, `description`, `accentColorToken` (optional), `dependencies` (optional). Components install to `compDir/ui/[ComponentName].tsx`.
 
-**Adding a palette:** create `configs/palettes/[name]/meta.json` with `name`, `description`, `dark` (bool), `background` (hex), `foreground` (hex), `accent` (Tailwind color token). Auto-discovered by `loadPalettes()`. Palettes are applied via `config.js` — replaces `--background`/`--foreground` CSS variables in `globals.css` and runs accent recolor across components.
+**Adding a setup config:** create `configs/setup/[key]/meta.json` with `key`, `label`, `description`, `type` (`"boolean"` for now), `default`, `prompt`, `templates` (null = all, or `["portfolio"]` to scope). Add `hooks.js` exporting `async apply(ctx)` where `ctx` has `{ enabled, projectType, tmpl, lib }`. `setup.js` auto-discovers and prompts for all setup configs before calling `tmpl.setup()`, then calls each hook's `apply()`. `tmpl.collapseI18n()` is called via `ctx.tmpl` — each template exports it.
+
+**Adding a live config (palette-style):** create `configs/[category]/[name]/meta.json` following the palette schema for that category. Add a `load[Category]()` discovery function to `lib.js` (mirrors `loadPalettes()`). Wire it into `config.js` as a new menu option. Live configs can be changed post-setup at any time.
 
 ## Generated Project Config
 
