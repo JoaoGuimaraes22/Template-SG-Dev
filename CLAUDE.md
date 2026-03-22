@@ -10,11 +10,13 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind CSS v4 · Framer Mot
 scripts/
   lib.js              Shared helpers: FS ops, .launchkit I/O, collapseI18nBase, marker utilities
                       (extractBetweenMarkers, removeMarkerBlock), loadTemplates, loadPresets,
-                      discoverSections, parseSectionsFromPage, detectInstalledSections, LOCALES
+                      loadPalettes, discoverSections, discoverComponents, detectInstalledSections,
+                      detectInstalledComponents, parseSectionsFromPage, LOCALES
   collapse.js         Shared i18n collapse helpers for components: collapseChatWidgetTsx, collapseChatNudgeTsx
   setup.js            --name + --output → create project, delegate to template module, then preset prompt
-  config.js           --project → project-wide settings (i18n display, accent color recolor)
+  config.js           --project → project-wide settings (i18n display, palette, accent color recolor)
   sections.js         --project → add/remove/status for all sections (universal, all templates)
+  components.js       --project → add/remove/status for UI atoms (Button, Card, etc.)
   reset.js            --project → strip to base scaffold
   validate.js         --project → check YOUR_* placeholders, TODOs, images, .env.local
   status.js           --project → read-only project state + installed sections
@@ -25,6 +27,10 @@ scripts/
   presets/
     portfolio.js      Full portfolio preset: webgl-hero, chatbot, contact-form, testimonials, work, sidebar
     business.js       Full business preset: contact-form, floating-cta, whatsapp
+configs/
+  palettes/           Named design themes (bg + fg + accent together) — auto-discovered by loadPalettes()
+    default/          bg:#fafafa fg:#111111 accent:indigo (baseline)
+    midnight/         bg:#0c0c0f fg:#f4f4f5 accent:violet
 templates/
   base/               Clean Next.js scaffold (copied first to every project)
   portfolio/          Portfolio base: app/[locale]/ core layout only (Hero, Services, Process, About, Contact)
@@ -41,6 +47,8 @@ templates/
     sidebar/default/         ProfileSidebar sticky desktop layout with hooks
     webgl-hero/default/      HeroFull shader/parallax hero, swaps Hero ↔ HeroFull
     whatsapp/default/        WhatsApp button in Contact + FloatingCTA via markers
+  components/         UI atom library — each component has variants with component.tsx + meta.json
+    button/primary/   Primary CTA button (solid + outline, sized, accent-aware)
 ```
 
 All scripts support `--help`. If `--project` is omitted, scripts fall back to cwd.
@@ -50,6 +58,10 @@ All scripts support `--help`. If `--project` is omitted, scripts fall back to cw
 **Adding a preset:** create `scripts/presets/foo.js` exporting `{ name, description, base, sections: [{ name, variant }] }`. Presets are auto-discovered from `scripts/presets/` — no registration needed. `base` must match a template type. Presets are applied by `setup.js` after template setup, running each section via child process with `--yes --no-install`, then a single `npm install`.
 
 **Adding a library section:** create `templates/sections/[name]/[variant]/` with `meta.json` and any combination of `component.tsx`, `en.json`, `pt.json`, `hooks.js`. Only `meta.json` is required — `component.tsx` is optional for non-page sections (e.g. contact-form manages only an API route). Sections are auto-discovered by `discoverSections()` — no registration needed. See `meta.json` schema below.
+
+**Adding a component:** create `templates/components/[name]/[variant]/` with `component.tsx` and `meta.json`. Components are atomic UI atoms (Button, Card, Modal, etc.) with no page injection, no dict keys, no nav links. Auto-discovered by `discoverComponents()`. `meta.json` needs only `componentName`, `description`, `accentColorToken` (optional), `dependencies` (optional). Components install to `compDir/ui/[ComponentName].tsx`.
+
+**Adding a palette:** create `configs/palettes/[name]/meta.json` with `name`, `description`, `dark` (bool), `background` (hex), `foreground` (hex), `accent` (Tailwind color token). Auto-discovered by `loadPalettes()`. Palettes are applied via `config.js` — replaces `--background`/`--foreground` CSS variables in `globals.css` and runs accent recolor across components.
 
 ## Generated Project Config
 
@@ -75,7 +87,7 @@ Components live in `app/[locale]/components/` (i18n on) or `app/components/` (i1
   "version": 1,
   "name": "my-project",
   "type": "portfolio",
-  "features": { "i18n": true },
+  "features": { "i18n": true, "accentColor": "indigo", "palette": "default" },
   "sections": {
     "webgl-hero":   { "variant": "default",   "addedAt": "2026-03-21T..." },
     "chatbot":      { "variant": "default",   "addedAt": "2026-03-21T..." },
@@ -84,11 +96,14 @@ Components live in `app/[locale]/components/` (i18n on) or `app/components/` (i1
     "work":         { "variant": "default",   "addedAt": "2026-03-21T..." },
     "sidebar":      { "variant": "default",   "addedAt": "2026-03-21T..." },
     "skills":       { "variant": "grid",      "addedAt": "2026-03-21T..." }
+  },
+  "components": {
+    "Button": { "variant": "primary", "addedAt": "2026-03-21T..." }
   }
 }
 ```
 
-`features` holds project-wide config only: `i18n` (boolean) and `accentColor` (business only). `sections` is always `{}` after template setup — populated by presets (during `setup.js`) or manually via `sections.js`. File-based detection is authoritative. Do not delete this file.
+`features`: `i18n` (boolean), `accentColor` (Tailwind token, all templates), `palette` (named palette, default: "default"). `sections` is always `{}` after template setup — populated by presets or `sections.js`. `components` tracks installed UI atoms from `components.js`. File-based detection is authoritative. Do not delete this file.
 
 ## Section Library
 
