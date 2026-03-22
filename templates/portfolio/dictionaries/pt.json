@@ -4,8 +4,6 @@
     "cta": "Iniciar Projeto",
     "links": [
       { "id": "home", "label": "Início" },
-      { "id": "work", "label": "Projectos" },
-      { "id": "testimonials", "label": "Avaliações" },
       { "id": "services", "label": "Serviços" },
       { "id": "process", "label": "Processo" },
       { "id": "about", "label": "Sobre" },
@@ -32,89 +30,6 @@
       {
         "value": "+0",
         "label": "Anos de Experiência"
-      }
-    ]
-  },
-  "work": {
-    "title_line1": "PROJECTOS",
-    "title_line2": "SELECIONADOS",
-    "cta": "Ver todos os projetos",
-    "projects": [
-      {
-        "slug": "example-project",
-        "title": "Projeto de Exemplo",
-        "description": "Uma descrição curta do projeto — o que é, para quem é e que problema resolve.",
-        "long_description": "Uma descrição mais longa do projeto. Explique o contexto, o desafio e como o abordou.\n\nDescreva as funcionalidades principais que criou e as decisões que tomou.\n\nTermine com o resultado ou impacto.",
-        "image": "/projects/example-project/1.png",
-        "images": [
-          "/projects/example-project/1.png",
-          "/projects/example-project/2.png",
-          "/projects/example-project/3.png"
-        ],
-        "tags": ["Web Design", "Desenvolvimento"],
-        "live": "https://example.com",
-        "github": null
-      }
-    ]
-  },
-  "reviews": {
-    "title_line1": "O QUE OS CLIENTES",
-    "title_line2": "DIZEM",
-    "subtitle": "Feedback real de clientes.",
-    "items": [
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
-      },
-      {
-        "quote": "Testemunho de exemplo — substitua por uma citação real de um cliente sobre o impacto do seu trabalho.",
-        "name": "Nome do Cliente",
-        "role": "Cargo, Empresa",
-        "avatar": null
       }
     ]
   },

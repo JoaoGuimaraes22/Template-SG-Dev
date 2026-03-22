@@ -3,7 +3,6 @@ import { type Locale } from "../../i18n-config";
 import { getDictionary } from "../../get-dictionary";
 import ScrollProgress from "./components/ScrollProgress";
 import Navbar from "./components/Navbar";
-import ChatWidget from "./components/ChatWidget";
 import { MotionConfig } from "framer-motion";
 import LangSetter from "./components/LangSetter";
 
@@ -93,7 +92,6 @@ export default async function LocaleLayout({
       <ScrollProgress />
       <Navbar locale={locale} nav={dict.navbar} />
       {children}
-      <ChatWidget locale={locale} />
     </MotionConfig>
   );
 }

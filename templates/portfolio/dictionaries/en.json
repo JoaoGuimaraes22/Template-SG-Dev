@@ -4,8 +4,6 @@
     "cta": "Start a Project",
     "links": [
       { "id": "home", "label": "Home" },
-      { "id": "work", "label": "Projects" },
-      { "id": "testimonials", "label": "Reviews" },
       { "id": "services", "label": "Services" },
       { "id": "process", "label": "Workflow" },
       { "id": "about", "label": "About" },
@@ -32,89 +30,6 @@
       {
         "value": "+0",
         "label": "Years Experience"
-      }
-    ]
-  },
-  "work": {
-    "title_line1": "SELECTED",
-    "title_line2": "PROJECTS",
-    "cta": "See all projects",
-    "projects": [
-      {
-        "slug": "example-project",
-        "title": "Example Project",
-        "description": "A short description of this project — what it is, who it's for, and what problem it solves.",
-        "long_description": "A longer description of the project. Explain the context, the challenge, and how you approached it.\n\nDescribe the key features you built and the decisions you made.\n\nEnd with the outcome or impact.",
-        "image": "/projects/example-project/1.png",
-        "images": [
-          "/projects/example-project/1.png",
-          "/projects/example-project/2.png",
-          "/projects/example-project/3.png"
-        ],
-        "tags": ["Web Design", "Development"],
-        "live": "https://example.com",
-        "github": null
-      }
-    ]
-  },
-  "reviews": {
-    "title_line1": "WHAT CLIENTS",
-    "title_line2": "SAY",
-    "subtitle": "Real feedback from clients.",
-    "items": [
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
-      },
-      {
-        "quote": "Placeholder testimonial — replace with a real quote from a client about the impact of your work.",
-        "name": "Client Name",
-        "role": "Role, Company",
-        "avatar": null
       }
     ]
   },
