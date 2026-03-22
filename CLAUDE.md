@@ -9,40 +9,45 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind CSS v4 · Framer Mot
 ```text
 scripts/
   lib.js              Shared helpers: FS ops, .launchkit I/O, collapseI18nBase, marker utilities
-                      (extractBetweenMarkers, removeMarkerBlock), loadTemplates,
+                      (extractBetweenMarkers, removeMarkerBlock), loadTemplates, loadPresets,
                       discoverSections, parseSectionsFromPage, detectInstalledSections, LOCALES
   collapse.js         Shared i18n collapse helpers for components: collapseChatWidgetTsx, collapseChatNudgeTsx
-  setup.js            --name + --output → create project, delegate to template module
+  setup.js            --name + --output → create project, delegate to template module, then preset prompt
   config.js           --project → project-wide settings (i18n display, accent color recolor)
-  sections.js         --project → add/remove/status for all sections (library + template-native)
+  sections.js         --project → add/remove/status for all sections (universal, all templates)
   reset.js            --project → strip to base scaffold
   validate.js         --project → check YOUR_* placeholders, TODOs, images, .env.local
   status.js           --project → read-only project state + installed sections
   templates/
-    portfolio.js      setup() → returns { type, features, sections }
-    business.js       setup() + recolor(), COLOR_MAP, COLOR_LABELS
+    portfolio.js      setup() → i18n only → returns { type, features: { i18n }, sections: {} }
+    business.js       setup() + recolor(), COLOR_MAP, COLOR_LABELS → returns { type, features: { i18n, accentColor }, sections: {} }
     blank.js          setup() → minimal (i18n only)
+  presets/
+    portfolio.js      Full portfolio preset: webgl-hero, chatbot, contact-form, testimonials, work, sidebar
+    business.js       Full business preset: contact-form, floating-cta, whatsapp
 templates/
   base/               Clean Next.js scaffold (copied first to every project)
-  portfolio/          Portfolio source: app/[locale]/, api/, dialogflow/, dictionaries/, public/
-  business/           Business source: app/[locale]/, api/contact/, dictionaries/, public/
+  portfolio/          Portfolio base: app/[locale]/ core layout only (Hero, Services, Process, About, Contact)
+  business/           Business base: app/[locale]/ core layout only (Hero, About, Services, Reviews, FAQ, Contact, Footer)
   sections/           Section library — each section has variants with component + dict + meta.json
     skills/grid/      Categorized grid cards with animated progress bars
     skills/bars/      Flat horizontal progress bars list
-    testimonials/scrolling/  Scrolling multi-column testimonial cards (portfolio)
-    contact-form/portfolio/  Resend contact API route (portfolio)
-    contact-form/business/   Resend contact API route with phone (business)
-    floating-cta/default/    Fixed mobile CTA bar with call/WhatsApp/book (business)
-    work/default/            Project gallery + detail pages with hooks (portfolio)
-    chatbot/default/         Dialogflow ChatWidget + API route + ChatNudge coupling (portfolio)
-    sidebar/default/         ProfileSidebar sticky desktop layout with hooks (portfolio)
-    webgl-hero/default/      HeroFull shader/parallax hero, swaps Hero ↔ HeroFull (portfolio)
-    whatsapp/default/        WhatsApp button in Contact + FloatingCTA via markers (business)
+    testimonials/scrolling/  Scrolling multi-column testimonial cards
+    contact-form/portfolio/  Resend contact API route (portfolio variant)
+    contact-form/business/   Resend contact API route with phone (business variant)
+    floating-cta/default/    Fixed mobile CTA bar with call/WhatsApp/book
+    work/default/            Project gallery + detail pages with hooks
+    chatbot/default/         Dialogflow ChatWidget + API route + ChatNudge coupling
+    sidebar/default/         ProfileSidebar sticky desktop layout with hooks
+    webgl-hero/default/      HeroFull shader/parallax hero, swaps Hero ↔ HeroFull
+    whatsapp/default/        WhatsApp button in Contact + FloatingCTA via markers
 ```
 
 All scripts support `--help`. If `--project` is omitted, scripts fall back to cwd.
 
-**Adding a template:** create `scripts/templates/foo.js` exporting `{ type, setup }` and `templates/foo/`. Templates are auto-discovered at runtime from `scripts/templates/` — no manual registration needed. `setup(rl)` must return `{ type, features, sections }` where `features` holds project-wide config (i18n, accentColor) and `sections` maps section names to `{ variant, addedAt }`.
+**Adding a template:** create `scripts/templates/foo.js` exporting `{ type, setup }` and `templates/foo/`. Templates are auto-discovered at runtime from `scripts/templates/` — no manual registration needed. `setup(rl)` must return `{ type, features, sections: {} }` — `features` holds project-wide config (i18n, accentColor); sections are always empty from setup and populated later via presets or `sections.js`.
+
+**Adding a preset:** create `scripts/presets/foo.js` exporting `{ name, description, base, sections: [{ name, variant }] }`. Presets are auto-discovered from `scripts/presets/` — no registration needed. `base` must match a template type. Presets are applied by `setup.js` after template setup, running each section via child process with `--yes --no-install`, then a single `npm install`.
 
 **Adding a library section:** create `templates/sections/[name]/[variant]/` with `meta.json` and any combination of `component.tsx`, `en.json`, `pt.json`, `hooks.js`. Only `meta.json` is required — `component.tsx` is optional for non-page sections (e.g. contact-form manages only an API route). Sections are auto-discovered by `discoverSections()` — no registration needed. See `meta.json` schema below.
 
@@ -72,24 +77,26 @@ Components live in `app/[locale]/components/` (i18n on) or `app/components/` (i1
   "type": "portfolio",
   "features": { "i18n": true },
   "sections": {
-    "webgl-hero": { "variant": "default", "addedAt": "2026-03-21T..." },
-    "chatbot": { "variant": "default", "addedAt": "2026-03-21T..." },
+    "webgl-hero":   { "variant": "default",   "addedAt": "2026-03-21T..." },
+    "chatbot":      { "variant": "default",   "addedAt": "2026-03-21T..." },
     "contact-form": { "variant": "portfolio", "addedAt": "2026-03-21T..." },
     "testimonials": { "variant": "scrolling", "addedAt": "2026-03-21T..." },
-    "work": { "variant": "default", "addedAt": "2026-03-21T..." },
-    "sidebar": { "variant": "default", "addedAt": "2026-03-21T..." },
-    "skills": { "variant": "grid", "addedAt": "2026-03-21T..." }
+    "work":         { "variant": "default",   "addedAt": "2026-03-21T..." },
+    "sidebar":      { "variant": "default",   "addedAt": "2026-03-21T..." },
+    "skills":       { "variant": "grid",      "addedAt": "2026-03-21T..." }
   }
 }
 ```
 
-`features` holds project-wide config only: `i18n` (boolean) and `accentColor` (business only). `sections` tracks all sections managed via `sections.js` — both template-native and library sections. File-based detection is authoritative. Do not delete this file.
+`features` holds project-wide config only: `i18n` (boolean) and `accentColor` (business only). `sections` is always `{}` after template setup — populated by presets (during `setup.js`) or manually via `sections.js`. File-based detection is authoritative. Do not delete this file.
 
 ## Section Library
 
-`node scripts/sections.js --project <path>` — interactive add/remove for all sections (library + template-native).
-`--status` lists installed + available sections. `--remove` to remove.
-`--add <name>` — non-interactive add: `--add skills --variant grid --after services --yes` (variant defaults to first compatible; after defaults to meta.defaultAfter; --yes skips confirmation).
+`node scripts/sections.js --project <path>` — interactive add/remove for all sections. Sections are universal — any section can be added to any project. Sections designed for a different template are shown with `[!]` as an advisory warning (not a hard block).
+
+`--status` lists all installed + available sections; cross-template sections marked `[!]`. `--remove` to remove.
+
+`--add <name>` — non-interactive add: `--add skills --variant grid --after services --yes` (variant defaults to first available; after defaults to meta.defaultAfter; --yes skips confirmation). `--no-install` skips npm install (used by setup.js to batch all deps into one final install).
 
 Complex sections use `hooks.js` for logic beyond meta.json (directory copies, layout injection, component swaps, marker-based JSX, sitemap regeneration). Hook execution order: `afterEnable` runs after `standardEnable`; `beforeDisable` runs before `standardDisable`; `afterDisable` runs after.
 
@@ -107,7 +114,7 @@ Sections live in `templates/sections/[name]/[variant]/`. Each variant contains:
   "componentName": "Skills",           // PascalCase, matches default export. null = no component
   "dictKey": "skills",                 // top-level key in en.json/pt.json. null = no dict merge
   "navLink": { "id": "skills", "label": { "en": "Skills", "pt": "Competências" } },
-  "templates": ["portfolio", "business"], // compatible template types
+  "templates": ["portfolio", "business"], // advisory — shown as [!] on non-native templates, not a hard block
   "defaultAfter": "services",          // preselected insertion position
   "pageSection": true,                 // true (default) = content section; false = skip position prompt + import/JSX
   "detectFile": null,                  // override component-based detection (e.g. "app/api/contact/route.ts")
@@ -155,22 +162,24 @@ Grep for these in generated projects:
 
 ## Dictionary Shapes
 
-**Portfolio:**
+**Portfolio base** (always present):
 
 ```json
 {
   "navbar": { "logo", "cta", "links": [{ "id", "label" }] },
   "hero": { "name", "card_bio", "title_line1", "title_line2", "tagline", "cta", "cta_secondary", "stats": [{ "value", "label" }] },
-  "work": { "title_line1", "title_line2", "cta", "projects": [{ "slug", "title", "description", "long_description", "image", "images", "tags", "live", "github" }] },
-  "reviews": { "title_line1", "title_line2", "subtitle", "items": [{ "quote", "name", "role", "avatar" }] },
   "services": { "title_line1", "title_line2", "stack_label", "items": [{ "icon", "title", "description", "details": [] }] },
   "process": { "title_line1", "title_line2", "steps": [{ "number", "title", "description" }] },
-  "about": { "title_line1", "title_line2", "bio", "fun_facts": [{ "emoji", "text" }] },
+  "about": { "title_line1", "title_line2", "bio", "bio_callout", "bio_cta", "fun_facts": [{ "emoji", "title", "text" }] },
   "contact": { "title_line1", "title_line2", "body", "form_*", "email", "github", "linkedin" }
 }
 ```
 
-**Business:** `navbar`, `hero`, `about`, `services`, `reviews` (with `rating`), `faq`, `contact` (with `phone`, `address`, `whatsapp`, `map_link`), `footer`, `cta`
+Section-owned dict keys (added when section is installed): `work` (work section), `reviews` (testimonials section), `skills` (skills section).
+
+**Business base** (always present): `navbar`, `hero`, `about`, `services`, `reviews` (with `rating`), `faq`, `contact` (with `phone`, `address`, `whatsapp`, `map_link`), `footer`
+
+Section-owned dict keys: `cta` (floating-cta section), `skills` (skills section).
 
 ## Tailwind v4 Gotchas
 
