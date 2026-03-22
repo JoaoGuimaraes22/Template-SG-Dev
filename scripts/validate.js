@@ -142,6 +142,37 @@ for (const { rel, tmpl } of imagesToCheck) {
   }
 }
 
+// ── Scan: component-referenced images ────────────────────────────────────────
+
+// Find image paths referenced in TSX/JSON files but missing from public/.
+// Skips paths already covered by the static imageWarnings check above.
+const refImageHits = []; // { source, imgPath }
+const IMAGE_REF_RE = /["'`](\/(?:[\w.\-]+\/)*[\w.\-]+\.(?:jpg|jpeg|png|webp|gif|svg))["'`]/g;
+const checkedPublicPaths = new Set(imagesToCheck.map((i) => i.rel));
+const seenRefPaths = new Set();
+
+for (const dir of ["app", "dictionaries"]) {
+  const absDir = path.join(ROOT, dir);
+  if (!fs.existsSync(absDir)) continue;
+  for (const filePath of walkFiles(absDir)) {
+    if (!/\.(tsx?|json)$/.test(filePath)) continue;
+    let content;
+    try { content = fs.readFileSync(filePath, "utf8"); } catch { continue; }
+    const rel = path.relative(ROOT, filePath).replace(/\\/g, "/");
+    IMAGE_REF_RE.lastIndex = 0;
+    let m;
+    while ((m = IMAGE_REF_RE.exec(content)) !== null) {
+      const imgPath = m[1]; // e.g. /menu/burgers.jpg
+      const publicRel = `public${imgPath}`;
+      if (seenRefPaths.has(publicRel) || checkedPublicPaths.has(publicRel)) continue;
+      seenRefPaths.add(publicRel);
+      if (!fs.existsSync(path.join(ROOT, publicRel))) {
+        refImageHits.push({ source: rel, imgPath, publicRel });
+      }
+    }
+  }
+}
+
 // ── Scan: env ────────────────────────────────────────────────────────────────
 
 const envExists = fs.existsSync(path.join(ROOT, ".env.local"));
@@ -187,12 +218,20 @@ console.log();
 
 // ── Images ────────────────────────────────────────────────────────────────────
 div("Images");
-if (imageWarnings.length === 0) {
+if (imageWarnings.length === 0 && refImageHits.length === 0) {
   console.log("  [ok]    All placeholder images have been replaced");
 } else {
-  console.log(`  [warn]  ${imageWarnings.length} image(s) need attention:`);
-  for (const { rel, reason } of imageWarnings) {
-    console.log(`            ${rel.padEnd(40)} ${reason}`);
+  if (imageWarnings.length > 0) {
+    console.log(`  [warn]  ${imageWarnings.length} image(s) need attention:`);
+    for (const { rel, reason } of imageWarnings) {
+      console.log(`            ${rel.padEnd(40)} ${reason}`);
+    }
+  }
+  if (refImageHits.length > 0) {
+    console.log(`  [warn]  ${refImageHits.length} referenced image(s) missing from public/:`);
+    for (const { source, imgPath } of refImageHits) {
+      console.log(`            ${imgPath.padEnd(40)} referenced in ${source}`);
+    }
   }
 }
 

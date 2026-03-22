@@ -538,6 +538,22 @@ function discoverSections() {
       const metaPath = path.join(variantDir, "meta.json");
       if (!fs.existsSync(metaPath)) continue;
       const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+      // Lint dict files: warn if dictKey is used as root key (causes double-nesting on install)
+      if (meta.dictKey) {
+        for (const locale of ["en", "pt"]) {
+          const dictPath = path.join(variantDir, `${locale}.json`);
+          if (!fs.existsSync(dictPath)) continue;
+          try {
+            const dict = JSON.parse(fs.readFileSync(dictPath, "utf8"));
+            if (Object.keys(dict).length === 1 && dict[meta.dictKey] !== undefined) {
+              console.warn(
+                `  [warn] ${sectionName}/${variantName}/${locale}.json wraps content in "${meta.dictKey}" key` +
+                ` — sections.js will double-nest it. Remove the outer wrapper.`
+              );
+            }
+          } catch { /* malformed JSON — ignore here, will fail on install */ }
+        }
+      }
       const variant = { name: variantName, dir: variantDir, meta };
       const hooksPath = path.join(variantDir, "hooks.js");
       if (fs.existsSync(hooksPath)) variant.hooks = require(hooksPath);

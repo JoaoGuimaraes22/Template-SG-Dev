@@ -38,11 +38,17 @@ function recolor(fromColor, toColor, compDir, layoutFile) {
 
 // ── Template file copy + accent color ─────────────────────────────────────────
 
-async function setup(rl) {
+async function setup(rl, answers) {
   console.log("\n─── Business Site — Setup ──────────────────────────────────────\n");
 
-  const colorChoice = await askChoice(rl, "[1/1] Brand accent color?", COLOR_LABELS);
-  const accentColor = COLOR_MAP[(colorChoice ?? 1) - 1];
+  let accentColor;
+  if (answers?.accentColor && COLOR_MAP.includes(answers.accentColor)) {
+    accentColor = answers.accentColor;
+    console.log(`  [answers] accentColor: ${accentColor}`);
+  } else {
+    const colorChoice = await askChoice(rl, "[1/1] Brand accent color?", COLOR_LABELS);
+    accentColor = COLOR_MAP[(colorChoice ?? 1) - 1];
+  }
 
   console.log(`\n─── Copying business template ──────────────────────────────────────\n`);
   copyTemplateFiles(TYPE);

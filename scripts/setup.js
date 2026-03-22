@@ -18,6 +18,7 @@ launchkit — Setup
 
 Usage:
   node scripts/setup.js --name <name> --output <dir> [--<template>] [--preset <name|none>]
+                        [--answers '{"languages":"en+pt","accentColor":"amber"}']
 
 Options:
   --name <name>       Project folder name (required)
@@ -25,6 +26,8 @@ Options:
   --<template>        Use a specific template (skip type prompt)
                       Templates are auto-discovered from scripts/templates/
   --preset <name>     Apply a named preset non-interactively (use "none" to skip)
+  --answers <json>    JSON object with pre-filled answers to skip interactive prompts
+                      Keys: languages ("en"|"pt"|"en+pt"), accentColor (color token)
   -h, --help          Show this help message
 
 Examples:
@@ -32,6 +35,8 @@ Examples:
   node scripts/setup.js --name my-site --output ../ --portfolio
   node scripts/setup.js --name my-site --output ../ --portfolio --preset portfolio
   node scripts/setup.js --name my-site --output ../ --business --preset none
+  node scripts/setup.js --name my-site --output ../ --business --preset restaurant \\
+    --answers '{"languages":"en+pt","accentColor":"amber"}'
 `);
 
 const TEMPLATES = loadTemplates();
@@ -44,6 +49,18 @@ function parseFlag(flag) {
     return process.argv[idx + 1];
   }
   return null;
+}
+
+// Pre-filled answers for non-interactive runs: --answers '{"languages":"en+pt","accentColor":"amber"}'
+function parseAnswers() {
+  const raw = parseFlag("--answers");
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw);
+  } catch {
+    console.error("\n  Error: --answers must be valid JSON, e.g. '{\"languages\":\"en+pt\",\"accentColor\":\"amber\"}'\n");
+    process.exit(1);
+  }
 }
 
 // ── .env.example generation ───────────────────────────────────────────────────
@@ -180,11 +197,18 @@ async function main() {
   const setupConfigs = loadSetupConfigs().filter(
     (c) => !c.templates || c.templates.includes(tmpl.type)
   );
+  const answers = parseAnswers();
   const configAnswers = {};
   if (setupConfigs.length > 0) {
     console.log("\n─── Project configuration ──────────────────────────────────────\n");
   }
   for (const config of setupConfigs) {
+    // Use pre-filled answer if provided via --answers
+    if (answers && answers[config.key] !== undefined) {
+      configAnswers[config.key] = answers[config.key];
+      console.log(`  [answers] ${config.key}: ${answers[config.key]}`);
+      continue;
+    }
     if (config.type === "boolean") {
       configAnswers[config.key] = await ask(rl, config.prompt);
     } else if (config.type === "select") {
@@ -194,7 +218,7 @@ async function main() {
   }
 
   // ── Run template setup (copies template files + template-specific prompts) ─
-  const result = await tmpl.setup(rl);
+  const result = await tmpl.setup(rl, answers);
 
   // ── Apply setup config hooks ───────────────────────────────────────────────
   const lib = require("./lib");

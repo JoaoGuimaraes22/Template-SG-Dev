@@ -9,6 +9,8 @@
 ```bash
 # Tool (run from repo root)
 node scripts/setup.js --name foo --output ../           # create project
+node scripts/setup.js --name foo --output ../ --business --preset restaurant \
+  --answers '{"languages":"en+pt","accentColor":"amber"}'  # fully non-interactive
 node scripts/sections.js --project <path> --status      # list installed + available sections
 node scripts/sections.js --project <path> --add <name> --yes  # add non-interactively
 node scripts/validate.js --project <path>               # check YOUR_* placeholders + TODOs
@@ -34,11 +36,11 @@ scripts/
   validate.js       --project → check placeholders, TODOs, images, .env.local
   status.js         --project → read-only project state
   templates/        portfolio.js · business.js · blank.js (auto-discovered)
-  presets/          portfolio.js · business.js (auto-discovered)
+  presets/          portfolio.js · business.js · restaurant.js (auto-discovered)
 configs/
   setup/languages/  Language select — writes i18n-config.ts, get-dictionary.ts
   palettes/         default (indigo) · midnight (violet) · azure-drift (teal)
-  niche-profiles/   hvac.json · cleaning.json · landscaping.json
+  niche-profiles/   hvac.json · cleaning.json · landscaping.json · restaurant.json
 templates/
   presets/
     base/           Clean Next.js scaffold + i18n infrastructure
@@ -96,9 +98,9 @@ team/spotlight/         2-col parallax image, glassmorphic stats overlay, tags +
 | Niche | Sections to add |
 |---|---|
 | Gym / Fitness | `schedule/weekly` + `pricing/cards` + `stats/counters` + `team/spotlight` + `floating-cta` |
-| Restaurant / Café | `menu/tabbed` + `reserve-bar` + `reservation/formspree` + `contact/map` + `google-reviews` |
+| Restaurant / Café | preset: `restaurant` (menu + reserve-bar + pricing + map + stats + reviews CTA) |
 | Services / Agency | `floating-cta` + `contact-form` + `google-reviews` + `booking/calendly` + `stats/counters` |
-| Portfolio (full) | preset: `webgl-hero` + `work` + `testimonials` + `sidebar` + `skills` + `contact-form` |
+| Portfolio (full) | preset: `portfolio` (webgl-hero + work + testimonials + sidebar + skills + contact-form) |
 | Retail / E-commerce | `reserve-bar` + `pricing/cards` + `gallery-strip` + `google-reviews` + `contact/map` |
 
 ## Placeholder Markers
@@ -113,9 +115,10 @@ YOUR_CALENDLY_URL        booking/calendly
 YOUR_GOOGLE_REVIEW_URL   google-reviews
 YOUR_FORMSPREE_ID        reservation/formspree  (get at formspree.io)
 YOUR_ORDER_URL           reserve-bar
-YOUR_MAPS_EMBED_URL      contact/map  (Google Maps embed src)
-YOUR_MAPS_DIRECTIONS_URL contact/map  (Google Maps directions href)
-// TODO: TEMPLATE        marks manual content that needs replacing
+YOUR_MAPS_EMBED_URL          contact/map  (Google Maps iframe src)
+YOUR_MAPS_DIRECTIONS_URL     contact/map  (directions button href)
+YOUR_ORDER_URL               reserve-bar  (TheFork, booking link, or takeaway platform)
+// TODO: TEMPLATE             marks manual content that needs replacing
 ```
 
 ## Section Authoring Rules

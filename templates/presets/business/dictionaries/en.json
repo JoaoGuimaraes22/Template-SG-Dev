@@ -33,15 +33,15 @@
     ]
   },
   "services": {
-    "title_line1": "OUR",
-    "title_line2": "SERVICES",
+    "title_line1": "WHAT WE",
+    "title_line2": "OFFER",
     "items": [
-      { "icon": "⭐", "title": "Service One", "description": "A short description of this service and the value it delivers to the client." },
-      { "icon": "⭐", "title": "Service Two", "description": "A short description of this service and the value it delivers to the client." },
-      { "icon": "⭐", "title": "Service Three", "description": "A short description of this service and the value it delivers to the client." },
-      { "icon": "⭐", "title": "Service Four", "description": "A short description of this service and the value it delivers to the client." },
-      { "icon": "⭐", "title": "Service Five", "description": "A short description of this service and the value it delivers to the client." },
-      { "icon": "⭐", "title": "Service Six", "description": "A short description of this service and the value it delivers to the client." }
+      { "icon": "⭐", "title": "Feature One", "description": "A short description of this feature and the value it delivers." },
+      { "icon": "⭐", "title": "Feature Two", "description": "A short description of this feature and the value it delivers." },
+      { "icon": "⭐", "title": "Feature Three", "description": "A short description of this feature and the value it delivers." },
+      { "icon": "⭐", "title": "Feature Four", "description": "A short description of this feature and the value it delivers." },
+      { "icon": "⭐", "title": "Feature Five", "description": "A short description of this feature and the value it delivers." },
+      { "icon": "⭐", "title": "Feature Six", "description": "A short description of this feature and the value it delivers." }
     ]
   },
   "reviews": {
