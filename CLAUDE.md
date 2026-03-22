@@ -8,8 +8,10 @@ Next.js 16 App Router · React 19 · TypeScript · Tailwind CSS v4 · Framer Mot
 
 ```text
 scripts/
-  lib.js              Shared helpers: FS ops, .launchkit I/O, collapseI18nBase, loadTemplates,
+  lib.js              Shared helpers: FS ops, .launchkit I/O, collapseI18nBase, marker utilities
+                      (extractBetweenMarkers, removeMarkerBlock), loadTemplates,
                       discoverSections, parseSectionsFromPage, detectInstalledSections, LOCALES
+  collapse.js         Shared i18n collapse helpers for components: collapseChatWidgetTsx, collapseChatNudgeTsx
   setup.js            --name + --output → create project, delegate to template module
   config.js           --project → project-wide settings (i18n display, accent color recolor)
   sections.js         --project → add/remove/status for all sections (library + template-native)
@@ -87,6 +89,7 @@ Components live in `app/[locale]/components/` (i18n on) or `app/components/` (i1
 
 `node scripts/sections.js --project <path>` — interactive add/remove for all sections (library + template-native).
 `--status` lists installed + available sections. `--remove` to remove.
+`--add <name>` — non-interactive add: `--add skills --variant grid --after services --yes` (variant defaults to first compatible; after defaults to meta.defaultAfter; --yes skips confirmation).
 
 Complex sections use `hooks.js` for logic beyond meta.json (directory copies, layout injection, component swaps, marker-based JSX, sitemap regeneration). Hook execution order: `afterEnable` runs after `standardEnable`; `beforeDisable` runs before `standardDisable`; `afterDisable` runs after.
 
@@ -133,7 +136,7 @@ The `ctx` object passed to hook functions contains:
   features,       // state.features object
   meta,           // this section's meta.json
   variantDir,     // absolute path to the variant directory
-  lib,            // { replaceInFile, removeLineContaining, addDependency, removeDependency, addNavLink, removeNavLink, copyDir, copyFile, deleteIfExists, safeJsonParse, TOOL_ROOT, LOCALES, LOCALES_TS_LITERAL, DICT_FILES }
+  lib,            // full scripts/lib.js module — all exports available (replaceInFile, removeLineContaining, extractBetweenMarkers, removeMarkerBlock, addDependency, removeDependency, addNavLink, removeNavLink, copyDir, copyFile, deleteIfExists, safeJsonParse, TOOL_ROOT, LOCALES, LOCALES_TS_LITERAL, DICT_FILES, ...)
 }
 ```
 

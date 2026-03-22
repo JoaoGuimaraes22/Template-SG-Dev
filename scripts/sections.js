@@ -39,9 +39,11 @@ const {
 
 const USAGE = `
   Usage:
-    node scripts/sections.js --project <path>             Add a section (interactive)
-    node scripts/sections.js --project <path> --remove    Remove a section
-    node scripts/sections.js --project <path> --status    List installed & available sections
+    node scripts/sections.js --project <path>                                    Add a section (interactive)
+    node scripts/sections.js --project <path> --add <name> [--variant <v>]      Add non-interactively
+                             [--after <ComponentName>] [--yes]
+    node scripts/sections.js --project <path> --remove                           Remove a section
+    node scripts/sections.js --project <path> --status                           List installed & available sections
 
   If --project is omitted, falls back to the current directory.
 `;
@@ -72,8 +74,21 @@ if (!state.sections) state.sections = {};
 const isRemove = process.argv.includes("--remove");
 const isStatus = process.argv.includes("--status");
 
+// Non-interactive add flags
+function getFlag(name) {
+  const idx = process.argv.indexOf(name);
+  return idx !== -1 && process.argv[idx + 1] ? process.argv[idx + 1] : null;
+}
+const addName    = getFlag("--add");
+const addVariant = getFlag("--variant");
+const addAfter   = getFlag("--after");
+const addYes     = process.argv.includes("--yes");
+
 if (isStatus) {
   showStatus();
+} else if (addName) {
+  addNonInteractive(addName, addVariant, addAfter, addYes)
+    .catch((err) => { console.error("\n  Error:", err.message); process.exit(1); });
 } else {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   (isRemove ? removeFlow(rl) : addFlow(rl))
@@ -89,25 +104,112 @@ function showStatus() {
 
   console.log(`\n  Section status for ${state.name} (${templateType}):\n`);
 
-  const compatible = allSections.filter((s) =>
-    s.variants.some((v) => v.meta.templates.includes(templateType))
-  );
-
-  if (compatible.length === 0) {
-    console.log("  No sections available for this template type.\n");
+  if (allSections.length === 0) {
+    console.log("  No sections found.\n");
     return;
   }
 
-  for (const section of compatible) {
+  for (const section of allSections) {
     const inst = installed[section.name];
     const status = inst ? `✓ installed (${inst.variant})` : "  available";
-    const variantNames = section.variants
-      .filter((v) => v.meta.templates.includes(templateType))
-      .map((v) => v.name)
-      .join(", ");
-    console.log(`  ${status}  ${section.name}  [${variantNames}]`);
+    const nativeVariants = section.variants.filter((v) => v.meta.templates.includes(templateType));
+    const allVariantNames = section.variants.map((v) => v.name).join(", ");
+    const advisory = nativeVariants.length === 0 ? " [!]" : "";
+    console.log(`  ${status}  ${section.name}  [${allVariantNames}]${advisory}`);
   }
-  console.log();
+  console.log(`\n  [!] = not originally designed for ${templateType} — add with care\n`);
+}
+
+// ── Non-interactive add ───────────────────────────────────────────────────────
+
+async function addNonInteractive(sectionName, variantName, afterComponentName, skipConfirm) {
+  const allSections = discoverSections();
+  const installed = detectInstalledSections(compDir, state.sections, templateType);
+
+  // Validate section exists
+  const section = allSections.find((s) => s.name === sectionName);
+  if (!section) {
+    console.error(`\n  Error: section "${sectionName}" not found.`);
+    console.error(`  Available: ${allSections.map((s) => s.name).join(", ")}\n`);
+    process.exit(1);
+  }
+  if (installed[sectionName]) {
+    console.error(`\n  Error: section "${sectionName}" is already installed.\n`);
+    process.exit(1);
+  }
+
+  // Warn if not native to this template type (advisory only)
+  const nativeVariants = section.variants.filter((v) => v.meta.templates.includes(templateType));
+  if (nativeVariants.length === 0) {
+    console.log(`  [!] "${sectionName}" was not originally designed for ${templateType} — proceeding anyway.`);
+  }
+  const allVariants = section.variants;
+
+  // Resolve variant — prefer native variants, fall back to all
+  const variantPool = nativeVariants.length > 0 ? nativeVariants : allVariants;
+  let variant;
+  if (variantName) {
+    variant = allVariants.find((v) => v.name === variantName);
+    if (!variant) {
+      console.error(`\n  Error: variant "${variantName}" not found for section "${sectionName}".`);
+      console.error(`  Available: ${allVariants.map((v) => v.name).join(", ")}\n`);
+      process.exit(1);
+    }
+  } else {
+    variant = variantPool[0];
+    if (variantPool.length > 1) {
+      console.log(`  Using default variant: ${variant.name} (pass --variant to override)`);
+    }
+  }
+
+  const { meta } = variant;
+  const isPageSection = meta.pageSection !== false;
+
+  // Resolve insertion position
+  let afterSection = null;
+  let pageSections = [];
+  if (isPageSection) {
+    pageSections = parseSectionsFromPage(pageFile);
+    const anchorName = afterComponentName || meta.defaultAfter;
+    if (anchorName && pageSections.length > 0) {
+      afterSection = pageSections.find(
+        (s) => s.name.toLowerCase() === anchorName.toLowerCase()
+      ) || null;
+      if (!afterSection) {
+        console.log(`  Warning: anchor "${anchorName}" not found in page.tsx — section will be added without positioning.`);
+      }
+    }
+  }
+
+  // Confirm (skip if --yes)
+  if (!skipConfirm) {
+    const posMsg = afterSection ? ` after ${afterSection.name}` : "";
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const confirmed = await ask(rl, `\n  Add ${sectionName} (${variant.name})${posMsg}?`);
+    rl.close();
+    if (!confirmed) { console.log("  Cancelled."); return; }
+  }
+
+  // Execute
+  console.log(`\n─── Adding ${sectionName} (${variant.name}) ──────────────────────────\n`);
+  standardEnable(sectionName, variant, afterSection, pageSections);
+
+  if (variant.hooks && variant.hooks.afterEnable) {
+    variant.hooks.afterEnable(buildCtx(sectionName, variant));
+  }
+
+  state.sections[sectionName] = { variant: variant.name, addedAt: new Date().toISOString() };
+  writeLaunchkit(state);
+
+  if (meta.dependencies && meta.dependencies.length > 0) {
+    console.log("\n  Running npm install...");
+    require("child_process").execSync("npm install", { cwd: projectDir, stdio: "inherit" });
+  }
+
+  console.log(`\n✓  ${meta.componentName || sectionName} added${meta.componentName ? ` to ${pageFile}` : ""}`);
+  if (meta.dictKey) console.log(`   Dict key: "${meta.dictKey}" added to ${DICT_FILES.join(", ")}`);
+  if (meta.navLink) console.log(`   Nav link: "${meta.navLink.id}" added`);
+  console.log(`\n   Run: node scripts/validate.js --project ${projectDir}\n`);
 }
 
 // ── Add flow ──────────────────────────────────────────────────────────────────
@@ -116,11 +218,8 @@ async function addFlow(rl) {
   const allSections = discoverSections();
   const installed = detectInstalledSections(compDir, state.sections, templateType);
 
-  // Filter to compatible, not-yet-installed sections
-  const available = allSections.filter((s) => {
-    if (installed[s.name]) return false;
-    return s.variants.some((v) => v.meta.templates.includes(templateType));
-  });
+  // Filter to not-yet-installed sections (all templates allowed)
+  const available = allSections.filter((s) => !installed[s.name]);
 
   if (available.length === 0) {
     console.log("\n  No sections available to add.\n");
@@ -131,15 +230,17 @@ async function addFlow(rl) {
   const sectionChoice = await askChoice(
     rl,
     "\n  Which section would you like to add?",
-    available.map((s) => s.name)
+    available.map((s) => {
+      const native = s.variants.some((v) => v.meta.templates.includes(templateType));
+      return native ? s.name : `${s.name} [!]`;
+    })
   );
   if (!sectionChoice) { console.log("  Cancelled."); return; }
   const section = available[sectionChoice - 1];
 
-  // 2. Pick variant (if multiple)
-  const compatibleVariants = section.variants.filter((v) =>
-    v.meta.templates.includes(templateType)
-  );
+  // 2. Pick variant (if multiple) — prefer native variants for this template, show all
+  const nativeVariants = section.variants.filter((v) => v.meta.templates.includes(templateType));
+  const compatibleVariants = nativeVariants.length > 0 ? nativeVariants : section.variants;
   let variant;
   if (compatibleVariants.length === 1) {
     variant = compatibleVariants[0];
@@ -523,6 +624,6 @@ function buildCtx(sectionName, variant) {
     features: state.features,
     meta: variant.meta,
     variantDir: variant.dir,
-    lib: { replaceInFile, removeLineContaining, addDependency, removeDependency, addNavLink, removeNavLink, copyDir, copyFile, deleteIfExists, safeJsonParse, TOOL_ROOT, LOCALES, LOCALES_TS_LITERAL, DICT_FILES },
+    lib: require("./lib"),
   };
 }

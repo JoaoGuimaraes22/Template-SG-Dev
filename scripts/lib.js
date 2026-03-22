@@ -122,6 +122,35 @@ function assertExists(relPath) {
   }
 }
 
+// ── Marker-based content utilities ───────────────────────────────────────────
+
+// Extracts content between two marker strings in `content` (startMarker inclusive,
+// endMarker exclusive). Returns null if either marker is absent or start >= end.
+function extractBetweenMarkers(content, startMarker, endMarker) {
+  const s = content.indexOf(startMarker);
+  const e = content.indexOf(endMarker);
+  if (s === -1 || e === -1 || s >= e) return null;
+  return content.slice(s, e);
+}
+
+// In a file at relPath (relative to _target), removes all content from startMarker
+// up to (but not including) endMarker. Also trims the preceding newline to avoid
+// leaving a blank line. Returns true if the block was removed, false otherwise.
+function removeMarkerBlock(relPath, startMarker, endMarker) {
+  const full = path.join(_target, relPath);
+  if (!fs.existsSync(full)) return false;
+  let content = fs.readFileSync(full, "utf8");
+  const s = content.indexOf(startMarker);
+  const e = content.indexOf(endMarker);
+  if (s === -1 || e === -1 || s >= e) return false;
+  // Trim a preceding newline so we don't leave a blank line
+  const trimFrom = s > 0 && content[s - 1] === "\n" ? s - 1 : s;
+  content = content.slice(0, trimFrom) + content.slice(e);
+  fs.writeFileSync(full, content, "utf8");
+  console.log("  [patched]", relPath, "— removed marker block:", startMarker.trim());
+  return true;
+}
+
 // Removes every line that contains `substring` from a file. No-op if file is missing.
 function removeLineContaining(relPath, substring) {
   const full = path.join(_target, relPath);
@@ -589,6 +618,8 @@ module.exports = {
   copyFile,
   copyFileInProject,
   copyDirInProject,
+  extractBetweenMarkers,
+  removeMarkerBlock,
   removeLineContaining,
   replaceInFile,
   addDependency,

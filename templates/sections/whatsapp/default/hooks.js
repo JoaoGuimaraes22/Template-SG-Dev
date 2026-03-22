@@ -19,10 +19,9 @@ function afterEnable(ctx) {
     let live = fs.readFileSync(contactFull, "utf8");
     if (!live.includes("wa.me/")) {
       const tmpl = fs.readFileSync(templateContact, "utf8");
-      const s = tmpl.indexOf("{/* WhatsApp */}");
-      const e = tmpl.indexOf("{/* Email */}");
-      if (s !== -1 && e !== -1) {
-        live = live.replace("{/* Email */}", tmpl.slice(s, e) + "{/* Email */}");
+      const waBlock = lib.extractBetweenMarkers(tmpl, "{/* WhatsApp */}", "{/* Email */}");
+      if (waBlock) {
+        live = live.replace("{/* Email */}", waBlock + "{/* Email */}");
         fs.writeFileSync(contactFull, live, "utf8");
         console.log("  [patched]", contactFile, "— added WhatsApp block");
       }
@@ -82,18 +81,7 @@ function afterDisable(ctx) {
 
   // ── Contact.tsx: remove WhatsApp block ──────────────────────────────────
   const contactFile = `${compDir}/Contact.tsx`;
-  const contactFull = path.join(projectDir, contactFile);
-  if (fs.existsSync(contactFull)) {
-    let content = fs.readFileSync(contactFull, "utf8");
-    const s = content.indexOf("{/* WhatsApp */}");
-    const e = content.indexOf("{/* Email */}");
-    if (s !== -1 && e !== -1 && s < e) {
-      const trimFrom = content[s - 2] === "\n" ? s - 1 : s;
-      content = content.slice(0, trimFrom) + content.slice(e);
-      fs.writeFileSync(contactFull, content, "utf8");
-      console.log("  [patched]", contactFile, "— removed WhatsApp block");
-    }
-  }
+  lib.removeMarkerBlock(contactFile, "{/* WhatsApp */}", "{/* Email */}");
 
   // ── FloatingCTA.tsx: remove separator + WhatsApp button ─────────────────
   const ctaFile = `${compDir}/FloatingCTA.tsx`;
