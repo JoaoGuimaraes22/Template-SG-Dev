@@ -79,15 +79,16 @@ function getFlag(name) {
   const idx = process.argv.indexOf(name);
   return idx !== -1 && process.argv[idx + 1] ? process.argv[idx + 1] : null;
 }
-const addName    = getFlag("--add");
-const addVariant = getFlag("--variant");
-const addAfter   = getFlag("--after");
-const addYes     = process.argv.includes("--yes");
+const addName      = getFlag("--add");
+const addVariant   = getFlag("--variant");
+const addAfter     = getFlag("--after");
+const addYes       = process.argv.includes("--yes");
+const addNoInstall = process.argv.includes("--no-install");
 
 if (isStatus) {
   showStatus();
 } else if (addName) {
-  addNonInteractive(addName, addVariant, addAfter, addYes)
+  addNonInteractive(addName, addVariant, addAfter, addYes, addNoInstall)
     .catch((err) => { console.error("\n  Error:", err.message); process.exit(1); });
 } else {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -122,7 +123,7 @@ function showStatus() {
 
 // ── Non-interactive add ───────────────────────────────────────────────────────
 
-async function addNonInteractive(sectionName, variantName, afterComponentName, skipConfirm) {
+async function addNonInteractive(sectionName, variantName, afterComponentName, skipConfirm, noInstall = false) {
   const allSections = discoverSections();
   const installed = detectInstalledSections(compDir, state.sections, templateType);
 
@@ -201,7 +202,7 @@ async function addNonInteractive(sectionName, variantName, afterComponentName, s
   state.sections[sectionName] = { variant: variant.name, addedAt: new Date().toISOString() };
   writeLaunchkit(state);
 
-  if (meta.dependencies && meta.dependencies.length > 0) {
+  if (meta.dependencies && meta.dependencies.length > 0 && !noInstall) {
     console.log("\n  Running npm install...");
     require("child_process").execSync("npm install", { cwd: projectDir, stdio: "inherit" });
   }

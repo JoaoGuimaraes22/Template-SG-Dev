@@ -7,27 +7,31 @@
 const readline = require("readline");
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
-const { TOOL_ROOT, setTarget, target, askChoice, writeLaunchkit, copyBaseScaffold, checkHelp, loadTemplates } = require("./lib");
+const { execSync, spawnSync } = require("child_process");
+const { TOOL_ROOT, setTarget, target, askChoice, writeLaunchkit, copyBaseScaffold, checkHelp, loadTemplates, loadPresets } = require("./lib");
 
 checkHelp(`
 launchkit — Setup
 
-  Creates a new project from a template with optional features.
+  Creates a new project from a template, then optionally applies a preset
+  (an ordered bundle of sections — contact form, chatbot, sidebar, etc.).
 
 Usage:
-  node scripts/setup.js --name <name> --output <dir> [--<template>]
+  node scripts/setup.js --name <name> --output <dir> [--<template>] [--preset <name|none>]
 
 Options:
   --name <name>       Project folder name (required)
   --output <dir>      Parent directory for the project (required)
   --<template>        Use a specific template (skip type prompt)
                       Templates are auto-discovered from scripts/templates/
+  --preset <name>     Apply a named preset non-interactively (use "none" to skip)
   -h, --help          Show this help message
 
 Examples:
   node scripts/setup.js --name my-site --output ../
   node scripts/setup.js --name my-site --output ../ --portfolio
+  node scripts/setup.js --name my-site --output ../ --portfolio --preset portfolio
+  node scripts/setup.js --name my-site --output ../ --business --preset none
 `);
 
 const TEMPLATES = loadTemplates();
@@ -174,11 +178,59 @@ async function main() {
   // ── Run template setup ─────────────────────────────────────────────────────
   const tmpl = TEMPLATES[templateKey];
   const result = await tmpl.setup(rl);
+
+  // Write initial .launchkit now so preset sections.js child processes can read/update it
+  writeLaunchkit({ name: projectName, type: result.type, features: result.features, sections: {} });
+  console.log("  [created] .launchkit");
+
+  // ── Preset selection ───────────────────────────────────────────────────────
+  const matchingPresets = loadPresets().filter((p) => p.base === result.type);
+  let chosenPreset = null;
+
+  if (matchingPresets.length > 0) {
+    const presetArg = parseFlag("--preset");
+    if (presetArg) {
+      if (presetArg !== "none") {
+        chosenPreset = matchingPresets.find((p) => p.name === presetArg) || null;
+        if (!chosenPreset) console.warn(`  [warn] preset "${presetArg}" not found — skipping`);
+      }
+    } else {
+      console.log("\n─── Preset sections ────────────────────────────────────────────\n");
+      const labels = [
+        ...matchingPresets.map((p) => `${p.name} — ${p.description}`),
+        "None (bare template, add sections later)",
+      ];
+      const choice = await askChoice(rl, "[?] Apply a preset?", labels);
+      const idx = (choice ?? labels.length) - 1;
+      chosenPreset = idx < matchingPresets.length ? matchingPresets[idx] : null;
+    }
+  }
+
   rl.close();
 
-  console.log("\n─── Generating .env.example ────────────────────────────────────\n");
-  generateEnvExample(result.type, result.sections || {});
+  // ── Apply preset sections (each runs sections.js with --no-install) ────────
+  if (chosenPreset) {
+    console.log(`\n─── Applying preset: ${chosenPreset.name} ─────────────────────────────\n`);
+    for (const s of chosenPreset.sections) {
+      const res = spawnSync(
+        process.execPath,
+        [
+          path.join(TOOL_ROOT, "scripts/sections.js"),
+          "--project", absOutput,
+          "--add", s.name,
+          "--variant", s.variant,
+          "--yes",
+          "--no-install",
+        ],
+        { stdio: "inherit" }
+      );
+      if (res.status !== 0) {
+        console.error(`\n  [warn] Failed to add section "${s.name}" — continuing.\n`);
+      }
+    }
+  }
 
+  // ── npm install (single pass after all sections are applied) ──────────────
   console.log("\n─── Running npm install ─────────────────────────────────────────\n");
   try {
     execSync("npm install", { stdio: "inherit", cwd: absOutput });
@@ -188,8 +240,11 @@ async function main() {
     process.exit(1);
   }
 
-  writeLaunchkit({ name: projectName, type: result.type, features: result.features, sections: result.sections || {} });
-  console.log("  [created] .launchkit");
+  // ── Read final .launchkit (sections updated by child processes) ────────────
+  const finalState = JSON.parse(fs.readFileSync(path.join(absOutput, ".launchkit"), "utf8"));
+
+  console.log("\n─── Generating .env.example ────────────────────────────────────\n");
+  generateEnvExample(result.type, finalState.sections || {});
 
   const relOutput = path.relative(process.cwd(), absOutput);
   const bootstrapFile = path.join(TOOL_ROOT, `templates/${result.type}/BOOTSTRAP.md`);
@@ -210,19 +265,6 @@ async function main() {
   console.log(`    node scripts/sections.js --project ${relOutput}`);
   console.log(`  To change project config (i18n, accent color):`);
   console.log(`    node scripts/config.js --project ${relOutput}\n`);
-
-  // Warn about steps that still require Claude to finish
-  const s = result.sections || {};
-  const hasTodos =
-    !result.features.i18n ||
-    (result.type === "portfolio" && (!s["contact-form"] || !s["sidebar"]));
-  if (hasTodos) {
-    console.log("⚠  Some steps require Claude to finish:");
-    if (!result.features.i18n) console.log("   • Collapse app/[locale]/ routing (i18n disabled)");
-    if (result.type === "portfolio" && !s["contact-form"]) console.log("   • Remove form JSX from Contact.tsx");
-    if (result.type === "portfolio" && !s["sidebar"]) console.log("   • Simplify page.tsx sidebar layout");
-    console.log(`   → Paste ${relBootstrap} into Claude Code to handle these.\n`);
-  }
 }
 
 main().catch((err) => {
