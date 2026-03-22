@@ -4,8 +4,7 @@ module.exports = {
   base: "business",
   sections: [
     { name: "contact-form",   variant: "business" },
-    { name: "floating-cta",   variant: "default"  },
-    { name: "whatsapp",       variant: "default"  },
+    { name: "floating-cta",   variant: "default"  }, // whatsapp installed by floating-cta hooks
     { name: "menu",           variant: "tabbed"   },
     { name: "reserve-bar",    variant: "default"  },
     { name: "pricing",        variant: "cards"    },

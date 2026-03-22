@@ -5,6 +5,6 @@ module.exports = {
   sections: [
     { name: "contact-form", variant: "business" },
     { name: "floating-cta", variant: "default"  },
-    { name: "whatsapp",     variant: "default"  },
+    // whatsapp is pre-installed in the business template's Contact.tsx
   ],
 };
