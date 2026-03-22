@@ -1,0 +1,8 @@
+{
+  "name": "default",
+  "description": "Default — light background, indigo accent",
+  "dark": false,
+  "background": "#fafafa",
+  "foreground": "#111111",
+  "accent": "indigo"
+}

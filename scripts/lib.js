@@ -305,6 +305,7 @@ function readLaunchkit() {
   if (!state.features) state.features = {};
   if (!state.sections) state.sections = {};
   if (!state.components) state.components = {};
+  if (!state.features.palette) state.features.palette = "default";
   // Version migration: stamp version if missing (pre-v1 files), warn if newer
   if (state.version === undefined) {
     state.version = LAUNCHKIT_VERSION;
@@ -492,6 +493,31 @@ function loadPresets() {
     _presetCache.push(mod);
   }
   return _presetCache;
+}
+
+// ── Palette discovery ─────────────────────────────────────────────────────────
+
+let _paletteCache = null;
+
+// Scans configs/palettes/[name]/meta.json and returns an array of palette objects.
+function loadPalettes() {
+  if (_paletteCache) return _paletteCache;
+  const root = path.join(TOOL_ROOT, "configs", "palettes");
+  if (!fs.existsSync(root)) return (_paletteCache = []);
+  const palettes = [];
+  for (const name of fs.readdirSync(root)) {
+    const dir = path.join(root, name);
+    if (!fs.statSync(dir).isDirectory()) continue;
+    const metaPath = path.join(dir, "meta.json");
+    if (!fs.existsSync(metaPath)) continue;
+    const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
+    if (!meta.name) {
+      console.warn(`  [warn] configs/palettes/${name}/meta.json missing "name" field — skipped`);
+      continue;
+    }
+    palettes.push(meta);
+  }
+  return (_paletteCache = palettes);
 }
 
 // ── Component discovery ───────────────────────────────────────────────────────
@@ -709,6 +735,7 @@ module.exports = {
   removeNavLink,
   loadTemplates,
   loadPresets,
+  loadPalettes,
   discoverComponents,
   detectInstalledComponents,
   discoverSections,
