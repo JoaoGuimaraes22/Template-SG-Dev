@@ -65,6 +65,26 @@ All scripts support `--help`. `--project` falls back to cwd if omitted.
 
 ## Section Library
 
+### Base Template Sections (swappable/detectable)
+
+```text
+hero/default/           Business hero — full-bleed image, overlay, CTA (business)
+hero/portfolio/         Portfolio hero — card layout with bio + stats (portfolio)
+hero/webgl/             WebGL shader hero; swaps Hero ↔ HeroFull (portfolio upgrade)
+hero/parallax/          rAF parallax hero; swaps Hero ↔ ParallaxHero (business upgrade)
+about/default/          Business about — image + stats grid (business)
+about/portfolio/        Portfolio about — bio, callout, fun facts (portfolio)
+services/default/       Business services — icon cards grid (business)
+services/portfolio/     Portfolio services — animated accordion + tech stack (portfolio)
+reviews/default/        Testimonial cards with star rating (business + portfolio)
+faq/default/            Accordion FAQ with expand/collapse (business)
+process/default/        Numbered process steps with animations (portfolio + business)
+contact/default/        Business contact — phone, address, hours, WhatsApp (business)
+contact/portfolio/      Portfolio contact — GitHub, LinkedIn, email form (portfolio)
+```
+
+### Add-on Sections
+
 ```text
 skills/grid/            Categorized grid cards with animated progress bars (portfolio + business)
 skills/bars/            Flat horizontal progress bars list (portfolio + business)
@@ -75,12 +95,10 @@ floating-cta/default/   Fixed mobile CTA bar with call/WhatsApp/book (business)
 work/default/           Project gallery + detail pages with hooks (portfolio)
 chatbot/default/        Dialogflow ChatWidget + API route + ChatNudge (portfolio)
 sidebar/default/        ProfileSidebar sticky desktop layout with hooks (portfolio)
-webgl-hero/default/     HeroFull shader/parallax hero, swaps Hero ↔ HeroFull (portfolio)
 whatsapp/default/       WhatsApp button in Contact + FloatingCTA via markers (business)
 booking/calendly/       Calendly inline embed; YOUR_CALENDLY_URL (universal upsell)
 google-reviews/default/ Google review CTA + star display; YOUR_GOOGLE_REVIEW_URL (universal upsell)
 gallery-strip/default/  Autoscrolling image strip, pause on hover (portfolio + business)
-parallax-hero/default/  rAF parallax hero, swaps Hero ↔ ParallaxHero (business)
 reserve-bar/default/    Mobile sticky CTA bar; YOUR_ORDER_URL (business)
 menu/tabbed/            Tabbed category menu + 2-col item grid (business)
 reservation/formspree/  Full-screen booking modal + Formspree; YOUR_FORMSPREE_ID (business)
@@ -100,7 +118,7 @@ team/spotlight/         2-col parallax image, glassmorphic stats overlay, tags +
 | Gym / Fitness | `schedule/weekly` + `pricing/cards` + `stats/counters` + `team/spotlight` + `floating-cta` |
 | Restaurant / Café | preset: `restaurant` (menu + reserve-bar + pricing + map + stats + reviews CTA) |
 | Services / Agency | `floating-cta` + `contact-form` + `google-reviews` + `booking/calendly` + `stats/counters` |
-| Portfolio (full) | preset: `portfolio` (webgl-hero + work + testimonials + sidebar + skills + contact-form) |
+| Portfolio (full) | preset: `portfolio` (hero/webgl + work + testimonials + sidebar + skills + contact-form) |
 | Retail / E-commerce | `reserve-bar` + `pricing/cards` + `gallery-strip` + `google-reviews` + `contact/map` |
 
 ## Placeholder Markers

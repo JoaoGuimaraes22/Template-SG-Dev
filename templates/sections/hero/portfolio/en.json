@@ -1,0 +1,23 @@
+{
+  "name": "YOUR NAME",
+  "card_bio": "Your Role · Your Specialty · Available for Freelance",
+  "title_line1": "YOUR TITLE",
+  "title_line2": "LINE TWO",
+  "tagline": "A short tagline that describes what you do and the value you deliver.",
+  "cta": "Start a Project",
+  "cta_secondary": "See My Work",
+  "stats": [
+    {
+      "value": "+0",
+      "label": "Projects Delivered"
+    },
+    {
+      "value": "+0",
+      "label": "Happy Clients"
+    },
+    {
+      "value": "+0",
+      "label": "Years Experience"
+    }
+  ]
+}

@@ -14,11 +14,8 @@ function afterEnable(ctx) {
 function beforeDisable(ctx) {
   const { compDir, pageFile, lib } = ctx;
 
-  // Restore the original Hero.tsx from the business template
-  lib.copyFile(
-    "templates/presets/business/app/[locale]/components/Hero.tsx",
-    `${compDir}/Hero.tsx`
-  );
+  // Restore the business Hero.tsx (bg-zinc-900 overlay variant) from the sections library
+  lib.copyFile("templates/sections/hero/default/component.tsx", `${compDir}/Hero.tsx`);
 
   // Swap ParallaxHero → Hero in page.tsx BEFORE standardDisable removes the lines
   lib.replaceInFile(

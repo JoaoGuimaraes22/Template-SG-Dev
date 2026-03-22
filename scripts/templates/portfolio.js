@@ -2,7 +2,7 @@
 // launchkit — Portfolio template module
 // Owns: template file copy.
 // Language setup is prompted and applied by setup.js via configs/setup/languages/.
-// Optional sections (chatbot, sidebar, work, testimonials, webgl-hero, contact-form)
+// Optional sections (chatbot, sidebar, work, testimonials, hero/webgl, contact-form)
 // are managed via sections.js / presets — not bundled here.
 
 const { copyTemplateFiles } = require("../lib");

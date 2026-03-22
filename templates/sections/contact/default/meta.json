@@ -1,0 +1,13 @@
+{
+  "componentName": "Contact",
+  "dictKey": "contact",
+  "navLink": { "id": "contact", "label": { "en": "Contact", "pt": "Contacto" } },
+  "pageSection": true,
+  "templates": ["business", "portfolio"],
+  "defaultAfter": "faq",
+  "props": { "i18n": "contact={dict.contact}", "collapsed": "contact={dict.contact}" },
+  "collapsePatches": [],
+  "accentColorToken": "indigo",
+  "dependencies": [],
+  "extraFiles": []
+}

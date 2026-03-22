@@ -1,0 +1,17 @@
+{
+  "title_line1": "VAMOS",
+  "title_line2": "FALAR",
+  "body": "Tem um projeto em mente? Adoraria ouvir sobre ele. Envie-me uma mensagem e responderei em 24 horas.",
+  "form_name": "Nome",
+  "form_email": "Email",
+  "form_message": "Mensagem",
+  "form_name_placeholder": "O Seu Nome",
+  "form_email_placeholder": "o.seu@email.com",
+  "form_message_placeholder": "Fale-me do seu projeto...",
+  "form_submit": "Enviar Mensagem",
+  "form_success": "Mensagem enviada! Responderei em breve.",
+  "email_label": "Enviar email",
+  "email": "YOUR_EMAIL",
+  "github": "https://github.com/YOUR_GITHUB",
+  "linkedin": "https://www.linkedin.com/in/YOUR_LINKEDIN/"
+}

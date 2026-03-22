@@ -1,0 +1,21 @@
+{
+  "title_line1": "O SEU TÍTULO",
+  "title_line2": "AQUI",
+  "tagline": "Uma frase curta que apresenta a sua proposta de valor — quem serve, o que faz, porque é a melhor escolha.",
+  "cta": "Reservar Agora",
+  "cta_secondary": "Saber Mais",
+  "stats": [
+    {
+      "value": "0+",
+      "label": "Anos de Experiência"
+    },
+    {
+      "value": "0+",
+      "label": "Clientes Satisfeitos"
+    },
+    {
+      "value": "0+",
+      "label": "Avaliações 5 Estrelas"
+    }
+  ]
+}

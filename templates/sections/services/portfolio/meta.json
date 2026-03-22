@@ -1,0 +1,13 @@
+{
+  "componentName": "Services",
+  "dictKey": "services",
+  "navLink": { "id": "services", "label": { "en": "Services", "pt": "Serviços" } },
+  "pageSection": true,
+  "templates": ["portfolio", "business"],
+  "defaultAfter": "hero",
+  "props": { "i18n": "services={dict.services}", "collapsed": "services={dict.services}" },
+  "collapsePatches": [],
+  "accentColorToken": "indigo",
+  "dependencies": [["framer-motion", "^12.0.0"]],
+  "extraFiles": []
+}

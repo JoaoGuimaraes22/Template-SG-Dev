@@ -1,0 +1,43 @@
+{
+  "title_line1": "O QUE OS CLIENTES",
+  "title_line2": "DIZEM",
+  "subtitle": "Feedback real de clientes reais.",
+  "items": [
+    {
+      "quote": "Avaliação de exemplo — substitua por uma citação real de um cliente satisfeito sobre a experiência ou resultado.",
+      "name": "Nome do Cliente",
+      "role": "Cargo ou Empresa",
+      "rating": 5
+    },
+    {
+      "quote": "Avaliação de exemplo — substitua por uma citação real de um cliente satisfeito sobre a experiência ou resultado.",
+      "name": "Nome do Cliente",
+      "role": "Cargo ou Empresa",
+      "rating": 5
+    },
+    {
+      "quote": "Avaliação de exemplo — substitua por uma citação real de um cliente satisfeito sobre a experiência ou resultado.",
+      "name": "Nome do Cliente",
+      "role": "Cargo ou Empresa",
+      "rating": 5
+    },
+    {
+      "quote": "Avaliação de exemplo — substitua por uma citação real de um cliente satisfeito sobre a experiência ou resultado.",
+      "name": "Nome do Cliente",
+      "role": "Cargo ou Empresa",
+      "rating": 5
+    },
+    {
+      "quote": "Avaliação de exemplo — substitua por uma citação real de um cliente satisfeito sobre a experiência ou resultado.",
+      "name": "Nome do Cliente",
+      "role": "Cargo ou Empresa",
+      "rating": 5
+    },
+    {
+      "quote": "Avaliação de exemplo — substitua por uma citação real de um cliente satisfeito sobre a experiência ou resultado.",
+      "name": "Nome do Cliente",
+      "role": "Cargo ou Empresa",
+      "rating": 5
+    }
+  ]
+}

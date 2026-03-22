@@ -1,0 +1,26 @@
+{
+  "title_line1": "COMO",
+  "title_line2": "TRABALHO",
+  "steps": [
+    {
+      "number": "01",
+      "title": "Descobrir",
+      "description": "Compreender os objetivos, o público e as restrições antes de tocar em qualquer design ou código."
+    },
+    {
+      "number": "02",
+      "title": "Desenhar",
+      "description": "Wireframes e mockups centrados na clareza — com o seu feedback em cada etapa."
+    },
+    {
+      "number": "03",
+      "title": "Construir",
+      "description": "Código limpo e eficiente usando as ferramentas certas para o trabalho."
+    },
+    {
+      "number": "04",
+      "title": "Lançar",
+      "description": "Deployment, configuração de SEO e uma entrega que realmente compreende."
+    }
+  ]
+}

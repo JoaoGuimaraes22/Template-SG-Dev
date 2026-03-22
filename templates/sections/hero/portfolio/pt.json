@@ -1,0 +1,23 @@
+{
+  "name": "YOUR NAME",
+  "card_bio": "O Seu Papel · A Sua Especialidade · Disponível para Freelance",
+  "title_line1": "YOUR TITLE",
+  "title_line2": "LINE TWO",
+  "tagline": "Um tagline curto que descreve o que faz e o valor que entrega.",
+  "cta": "Iniciar Projeto",
+  "cta_secondary": "Ver Trabalho",
+  "stats": [
+    {
+      "value": "+0",
+      "label": "Projetos Entregues"
+    },
+    {
+      "value": "+0",
+      "label": "Clientes Satisfeitos"
+    },
+    {
+      "value": "+0",
+      "label": "Anos de Experiência"
+    }
+  ]
+}

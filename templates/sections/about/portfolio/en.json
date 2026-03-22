@@ -1,0 +1,29 @@
+{
+  "title_line1": "ABOUT",
+  "title_line2": "ME",
+  "bio": "YOUR_NAME — a brief bio about who you are, what you do, and who you work with.\n\nA second paragraph with more detail about your background, approach, or values.\n\nOptional third paragraph — something personal or what you're working on.",
+  "bio_callout": "Open to new projects — remote or local.",
+  "bio_cta": "Get in touch →",
+  "fun_facts": [
+    {
+      "emoji": "☕",
+      "title": "Fun fact one.",
+      "text": "A short, personal detail that makes you more human."
+    },
+    {
+      "emoji": "📚",
+      "title": "Fun fact two.",
+      "text": "Something you're learning or interested in right now."
+    },
+    {
+      "emoji": "🌍",
+      "title": "Fun fact three.",
+      "text": "Where you work from or how you prefer to collaborate."
+    },
+    {
+      "emoji": "⚡",
+      "title": "Fun fact four.",
+      "text": "A working style or value you hold."
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "title_line1": "O QUE",
+  "title_line2": "OFERECEMOS",
+  "items": [
+    {
+      "icon": "⭐",
+      "title": "Funcionalidade Um",
+      "description": "Uma descrição curta desta funcionalidade e o valor que entrega."
+    },
+    {
+      "icon": "⭐",
+      "title": "Funcionalidade Dois",
+      "description": "Uma descrição curta desta funcionalidade e o valor que entrega."
+    },
+    {
+      "icon": "⭐",
+      "title": "Funcionalidade Três",
+      "description": "Uma descrição curta desta funcionalidade e o valor que entrega."
+    },
+    {
+      "icon": "⭐",
+      "title": "Funcionalidade Quatro",
+      "description": "Uma descrição curta desta funcionalidade e o valor que entrega."
+    },
+    {
+      "icon": "⭐",
+      "title": "Funcionalidade Cinco",
+      "description": "Uma descrição curta desta funcionalidade e o valor que entrega."
+    },
+    {
+      "icon": "⭐",
+      "title": "Funcionalidade Seis",
+      "description": "Uma descrição curta desta funcionalidade e o valor que entrega."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "componentName": "Process",
+  "dictKey": "process",
+  "navLink": { "id": "process", "label": { "en": "Process", "pt": "Processo" } },
+  "pageSection": true,
+  "templates": ["portfolio", "business"],
+  "defaultAfter": "services",
+  "props": { "i18n": "process={dict.process}", "collapsed": "process={dict.process}" },
+  "collapsePatches": [],
+  "accentColorToken": null,
+  "dependencies": [["framer-motion", "^12.0.0"]],
+  "extraFiles": []
+}

@@ -88,7 +88,7 @@ Post-install: add 6 photos to `public/gallery/` named `1.jpg` through `6.jpg`
 **Parallax Hero (business only):**
 ```bash
 cd /home/sebas/dev/projects/launchkit
-node scripts/sections.js --project <path> --add parallax-hero --yes
+node scripts/sections.js --project <path> --add hero --variant parallax --yes
 ```
 No post-install needed — uses the existing `public/hero.jpg`
 

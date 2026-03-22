@@ -1,0 +1,13 @@
+{
+  "componentName": "FAQ",
+  "dictKey": "faq",
+  "navLink": { "id": "faq", "label": { "en": "FAQ", "pt": "FAQ" } },
+  "pageSection": true,
+  "templates": ["business", "portfolio"],
+  "defaultAfter": "reviews",
+  "props": { "i18n": "faq={dict.faq}", "collapsed": "faq={dict.faq}" },
+  "collapsePatches": [],
+  "accentColorToken": "indigo",
+  "dependencies": [],
+  "extraFiles": []
+}

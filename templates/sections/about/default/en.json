@@ -1,0 +1,19 @@
+{
+  "title_line1": "ABOUT",
+  "title_line2": "US",
+  "body": "A paragraph about your business — who you are, what you do, and who you serve. Keep it warm and direct.\n\nA second paragraph about your approach, values, or what sets you apart from the competition.",
+  "stats": [
+    {
+      "value": "0+",
+      "label": "Years in Business"
+    },
+    {
+      "value": "0+",
+      "label": "Happy Clients"
+    },
+    {
+      "value": "0+",
+      "label": "Projects Completed"
+    }
+  ]
+}

@@ -29,7 +29,7 @@ node scripts/setup.js --name my-project --output ../
 
 Select template type. The script copies base scaffold + template, installs preset sections, runs `npm install`, writes `.launchkit`.
 
-**Portfolio preset:** webgl-hero, chatbot, contact-form, testimonials, work, sidebar
+**Portfolio preset:** hero/webgl, chatbot, contact-form, testimonials, work, sidebar
 
 **Business preset:** contact-form, floating-cta, whatsapp
 

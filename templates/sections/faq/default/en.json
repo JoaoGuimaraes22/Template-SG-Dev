@@ -1,0 +1,30 @@
+{
+  "title_line1": "COMMON",
+  "title_line2": "QUESTIONS",
+  "items": [
+    {
+      "question": "What areas do you serve?",
+      "answer": "Placeholder answer — replace with your actual service area or coverage zone."
+    },
+    {
+      "question": "How do I book an appointment?",
+      "answer": "Placeholder answer — describe your booking process (call, form, online, etc.)."
+    },
+    {
+      "question": "What are your hours?",
+      "answer": "Placeholder answer — list your operating hours and any weekend/emergency availability."
+    },
+    {
+      "question": "How much does it cost?",
+      "answer": "Placeholder answer — describe your pricing approach (fixed, quote-based, packages, etc.)."
+    },
+    {
+      "question": "Do you offer a guarantee?",
+      "answer": "Placeholder answer — describe any warranty, satisfaction guarantee, or return policy."
+    },
+    {
+      "question": "How long does it take?",
+      "answer": "Placeholder answer — give typical timeframes for your most common services."
+    }
+  ]
+}

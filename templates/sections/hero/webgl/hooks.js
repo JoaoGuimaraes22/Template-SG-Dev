@@ -17,8 +17,8 @@ function afterEnable(ctx) {
 function beforeDisable(ctx) {
   const { compDir, pageFile, lib } = ctx;
 
-  // Restore Hero.tsx from template
-  lib.copyFile("templates/portfolio/app/[locale]/components/Hero.tsx", `${compDir}/Hero.tsx`);
+  // Restore the portfolio Hero.tsx (card_bio variant) from the sections library
+  lib.copyFile("templates/sections/hero/portfolio/component.tsx", `${compDir}/Hero.tsx`);
 
   // Swap HeroFull → Hero in page.tsx BEFORE standardDisable removes the lines
   lib.replaceInFile(pageFile, 'import HeroFull from "./components/HeroFull";', 'import Hero from "./components/Hero";');

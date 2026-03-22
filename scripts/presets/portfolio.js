@@ -3,7 +3,7 @@ module.exports = {
   description: "Full portfolio — WebGL hero, chatbot, work gallery, testimonials, sidebar, contact form",
   base: "portfolio",
   sections: [
-    { name: "webgl-hero",   variant: "default"   },
+    { name: "hero",         variant: "webgl"     },
     { name: "chatbot",      variant: "default"   },
     { name: "contact-form", variant: "portfolio" },
     { name: "testimonials", variant: "scrolling" },
