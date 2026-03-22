@@ -123,7 +123,7 @@ function isDefaultImage(relPath, templateRelPath) {
 const imageWarnings = []; // { rel, reason }
 
 const imagesToCheck = [
-  { rel: "public/hero.jpg",     tmpl: `templates/${templateType}/public/hero.jpg` },
+  { rel: "public/hero.jpg",     tmpl: `templates/presets/${templateType}/public/hero.jpg` },
   { rel: "public/og-image.png", tmpl: null }, // not shipped — just check existence
 ];
 if (isPortfolio) {

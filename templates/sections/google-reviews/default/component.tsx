@@ -3,9 +3,8 @@
 import { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
-// TODO: TEMPLATE — Replace YOUR_GOOGLE_REVIEW_URL with your Google Business review link.
+// TODO: TEMPLATE — Set REVIEW_URL below to your Google Business review link.
 // Find it: Google Maps → your business → "Get more reviews" → copy link.
-// Example: https://g.page/r/YOUR_PLACE_ID/review
 const REVIEW_URL = "YOUR_GOOGLE_REVIEW_URL";
 
 interface GoogleReviewsDict {

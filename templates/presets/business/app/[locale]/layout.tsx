@@ -19,10 +19,12 @@ export async function generateMetadata({
   const dict = await getDictionary(locale);
 
   const title = "YOUR_BUSINESS — Your Short Descriptor";
-  const description =
-    locale === "pt"
-      ? "Descrição curta do seu negócio em português."
-      : "Short description of your business in English.";
+  const descriptions: Record<string, string> = {
+    pt: "Descrição curta do seu negócio em português.",
+    en: "Short description of your business in English.",
+  };
+  const description = descriptions[locale] ?? descriptions.en;
+  const ogLocales: Record<string, string> = { pt: "pt_PT", en: "en_US" };
 
   return {
     title,
@@ -40,7 +42,7 @@ export async function generateMetadata({
       url: `${SITE_URL}/${locale}`,
       siteName: dict.navbar.logo,
       images: [{ url: `${SITE_URL}/og-image.png`, width: 1200, height: 630 }],
-      locale: locale === "pt" ? "pt_PT" : "en_US",
+      locale: ogLocales[locale] ?? "en_US",
       type: "website",
     },
     twitter: {

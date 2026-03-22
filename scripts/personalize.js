@@ -76,13 +76,13 @@ const PLACEHOLDER_MAP = {
     {
       key: "EMAIL",
       label: "Email address",
-      targets: (ctx) => [...ctx.dictFiles, ctx.layoutFile],
+      targets: (ctx) => [...ctx.dictFiles, ctx.layoutFile, ...ctx.apiFiles],
     },
     {
       key: "ADDRESS",
       label: "Street address",
-      description: "Used in contact section, footer, and Google Maps link",
-      targets: (ctx) => ctx.dictFiles,
+      description: "Used in contact section, footer, and JSON-LD structured data",
+      targets: (ctx) => [...ctx.dictFiles, ctx.layoutFile],
     },
     {
       key: "WHATSAPP_NUMBER",
@@ -93,10 +93,53 @@ const PLACEHOLDER_MAP = {
     {
       key: "DOMAIN",
       label: "Domain (without https://)",
-      description: "E.g. joeshvac.ae — used in SITE_URL and map_link",
-      targets: (ctx) => [...ctx.dictFiles, ctx.layoutFile],
+      description: "E.g. joeshvac.ae — used in SITE_URL, sitemap, and robots",
+      targets: (ctx) => [ctx.layoutFile, "app/robots.ts", "app/sitemap.ts"],
       // Special: also replace YOUR_DOMAIN.vercel.app (SITE_URL default)
       special: "domain",
+    },
+    // ── Section-specific (only prompted when section is installed) ────────────
+    {
+      key: "ORDER_URL",
+      label: "Online ordering / reservation URL",
+      description: "reserve-bar: link to TheFork, OpenTable, or takeaway platform",
+      condition: (state) => !!state.sections?.["reserve-bar"],
+      targets: (ctx) => ctx.dictFiles,
+    },
+    {
+      key: "MAPS_EMBED_URL",
+      label: "Google Maps embed URL",
+      description: "contact/map: Maps → Share → Embed a map → copy iframe src attribute",
+      condition: (state) => !!state.sections?.["contact"],
+      targets: (ctx) => ctx.dictFiles,
+    },
+    {
+      key: "MAPS_DIRECTIONS_URL",
+      label: "Google Maps directions URL",
+      description: "contact/map: google.com/maps?q=... link for 'Get directions' button",
+      condition: (state) => !!state.sections?.["contact"],
+      targets: (ctx) => ctx.dictFiles,
+    },
+    {
+      key: "GOOGLE_REVIEW_URL",
+      label: "Google Review URL",
+      description: "google-reviews: your Google Business review link (Maps → Get more reviews)",
+      condition: (state) => !!state.sections?.["google-reviews"],
+      targets: (ctx) => ctx.componentFiles,
+    },
+    {
+      key: "CALENDLY_URL",
+      label: "Calendly scheduling URL",
+      description: "booking/calendly: your Calendly link (e.g. calendly.com/yourname)",
+      condition: (state) => !!state.sections?.["booking"],
+      targets: (ctx) => ctx.componentFiles,
+    },
+    {
+      key: "FORMSPREE_ID",
+      label: "Formspree form ID",
+      description: "reservation/formspree: get at formspree.io (e.g. xabcdefg)",
+      condition: (state) => !!state.sections?.["reservation"],
+      targets: (ctx) => ctx.componentFiles,
     },
   ],
   portfolio: [
@@ -126,8 +169,8 @@ const PLACEHOLDER_MAP = {
     {
       key: "DOMAIN",
       label: "Domain (without https://)",
-      description: "E.g. johndoe.dev — used in SITE_URL",
-      targets: (ctx) => [...ctx.dictFiles, ctx.layoutFile],
+      description: "E.g. johndoe.dev — used in SITE_URL, sitemap, and robots",
+      targets: (ctx) => [ctx.layoutFile, "app/robots.ts", "app/sitemap.ts"],
       special: "domain",
     },
     {
@@ -140,6 +183,21 @@ const PLACEHOLDER_MAP = {
       key: "TIMEZONE",
       label: "Timezone",
       description: "E.g. UTC+4  — shown next to city in sidebar",
+      targets: (ctx) => ctx.componentFiles,
+    },
+    // ── Section-specific ──────────────────────────────────────────────────────
+    {
+      key: "GOOGLE_REVIEW_URL",
+      label: "Google Review URL",
+      description: "google-reviews: your Google Business review link (Maps → Get more reviews)",
+      condition: (state) => !!state.sections?.["google-reviews"],
+      targets: (ctx) => ctx.componentFiles,
+    },
+    {
+      key: "CALENDLY_URL",
+      label: "Calendly scheduling URL",
+      description: "booking/calendly: your Calendly link (e.g. calendly.com/yourname)",
+      condition: (state) => !!state.sections?.["booking"],
       targets: (ctx) => ctx.componentFiles,
     },
   ],
@@ -170,12 +228,33 @@ function buildCtx(state) {
       .map((f) => `${compDir}/${f}`);
   }
 
+  // Scan app/api/**/route.ts for YOUR_ tokens (e.g. contact-form injects YOUR_EMAIL)
+  function findApiFiles() {
+    const apiDir = path.join(target(), "app/api");
+    if (!fs.existsSync(apiDir)) return [];
+    const results = [];
+    function walk(dir) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) { walk(full); continue; }
+        if (!entry.name.endsWith(".ts") && !entry.name.endsWith(".tsx")) continue;
+        const content = fs.readFileSync(full, "utf8");
+        if (/YOUR_[A-Z_]+/.test(content)) {
+          results.push(path.relative(target(), full).replace(/\\/g, "/"));
+        }
+      }
+    }
+    walk(apiDir);
+    return results;
+  }
+
   return {
     i18nActive,
     compDir,
     layoutFile,
     dictFiles,
     componentFiles: findComponentFiles(),
+    apiFiles: findApiFiles(),
     languages: state.features?.languages ?? "en",
   };
 }
@@ -199,14 +278,16 @@ function applyReplacement(placeholder, value, ctx) {
   const filesMissed = [];
 
   for (const relPath of files) {
-    // Special handling for DOMAIN: replace YOUR_DOMAIN.vercel.app first (SITE_URL default),
-    // then the bare token. This avoids leaving `.vercel.app` appended to custom domains.
+    // Special handling for DOMAIN: replace YOUR_DOMAIN.vercel.app first (SITE_URL default).
+    // If found, skip bare token replacement to avoid false "not found" warnings.
     if (placeholder.special === "domain") {
       const full = path.join(target(), relPath);
       if (fs.existsSync(full)) {
         const content = fs.readFileSync(full, "utf8");
         if (content.includes(`${token}.vercel.app`)) {
-          replaceInFile(relPath, `${token}.vercel.app`, value);
+          const hit = replaceInFile(relPath, `${token}.vercel.app`, value);
+          (hit ? filesHit : filesMissed).push(relPath);
+          continue;
         }
       }
     }
@@ -268,7 +349,7 @@ function runValidate() {
 
 // ── Profile mode ──────────────────────────────────────────────────────────────
 
-function profileMode(profilePath, placeholderList, ctx) {
+function profileMode(profilePath, placeholderList, ctx, state) {
   let raw;
   try {
     raw = fs.readFileSync(path.resolve(profilePath), "utf8");
@@ -294,6 +375,7 @@ function profileMode(profilePath, placeholderList, ctx) {
   console.log(`\n─── Applying profile (${Object.keys(profile).length} keys found) ──────────────────────\n`);
 
   for (const placeholder of placeholderList) {
+    if (placeholder.condition && !placeholder.condition(state)) continue;
     const value = profile[placeholder.key];
     if (!value) continue;
     console.log(`  ${placeholder.key}: ${value}`);
@@ -319,7 +401,7 @@ function tokenStillPresent(placeholder, ctx) {
   });
 }
 
-async function interactiveMode(placeholderList, ctx) {
+async function interactiveMode(placeholderList, ctx, state) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
   const ask = (question) => new Promise((resolve) => rl.question(question, resolve));
@@ -332,6 +414,9 @@ async function interactiveMode(placeholderList, ctx) {
 
   try {
     for (const placeholder of placeholderList) {
+      // Skip section-specific placeholders when the section is not installed
+      if (placeholder.condition && !placeholder.condition(state)) continue;
+
       const present = tokenStillPresent(placeholder, ctx);
       const saved = existingProfile[placeholder.key];
 
@@ -395,9 +480,9 @@ async function main() {
 
   const profilePath = getFlag("--profile");
   if (profilePath) {
-    profileMode(profilePath, placeholderList, ctx);
+    profileMode(profilePath, placeholderList, ctx, state);
   } else {
-    await interactiveMode(placeholderList, ctx);
+    await interactiveMode(placeholderList, ctx, state);
   }
 }
 

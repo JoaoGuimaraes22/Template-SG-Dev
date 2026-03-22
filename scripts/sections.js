@@ -172,8 +172,10 @@ async function addNonInteractive(sectionName, variantName, afterComponentName, s
   if (isPageSection) {
     pageSections = parseSectionsFromPage(pageFile);
     const anchorName = afterComponentName || meta.defaultAfter;
-    if (anchorName && pageSections.length > 0) {
-      afterSection = pageSections.find(
+    if (anchorName) {
+      // Search all JSX components (including structural like Hero) for anchor
+      const allPageComponents = parseSectionsFromPage(pageFile, { includeStructural: true });
+      afterSection = allPageComponents.find(
         (s) => s.name.toLowerCase() === anchorName.toLowerCase()
       ) || null;
       if (!afterSection) {
@@ -456,27 +458,43 @@ function standardEnable(sectionName, variant, afterSection, pageSections) {
       console.log(`  [patched] ${pageFile} — added import: ${meta.componentName}`);
     }
 
-    // f. Add JSX to page.tsx after chosen anchor
+    // f. Add JSX to page.tsx after chosen anchor (or before Footer as fallback)
     const propsKey = i18nActive ? "i18n" : "collapsed";
     const jsxProps = meta.props[propsKey] || `${meta.dictKey}={dict.${meta.dictKey}}`;
-    if (afterSection) {
+    {
       // Re-read after import patch
       pageContent = fs.readFileSync(fullPage, "utf8");
       const pageLines = pageContent.split("\n");
+      let insertAfterIdx = -1;
+      let insertLabel = "";
 
-      // Find the JSX line for the anchor component
-      const anchorPattern = new RegExp(`^(\\s*)<${afterSection.name}\\s`);
-      let anchorLineIdx = -1;
-      for (let i = 0; i < pageLines.length; i++) {
-        if (anchorPattern.test(pageLines[i])) { anchorLineIdx = i; break; }
+      if (afterSection) {
+        // Find the JSX line for the anchor component
+        const anchorPattern = new RegExp(`^(\\s*)<${afterSection.name}\\s`);
+        for (let i = 0; i < pageLines.length; i++) {
+          if (anchorPattern.test(pageLines[i])) { insertAfterIdx = i; break; }
+        }
+        if (insertAfterIdx !== -1) insertLabel = ` after <${afterSection.name}>`;
       }
 
-      if (anchorLineIdx !== -1) {
-        const indent = pageLines[anchorLineIdx].match(/^(\s*)/)[1];
+      if (insertAfterIdx === -1) {
+        // Fallback: insert before <Footer or before </>
+        for (let i = pageLines.length - 1; i >= 0; i--) {
+          if (/^\s*<Footer[\s/>]/.test(pageLines[i])) { insertAfterIdx = i - 1; insertLabel = " before <Footer>"; break; }
+        }
+        if (insertAfterIdx === -1) {
+          for (let i = pageLines.length - 1; i >= 0; i--) {
+            if (/^\s*<\/>/.test(pageLines[i])) { insertAfterIdx = i - 1; insertLabel = " (end of page)"; break; }
+          }
+        }
+      }
+
+      if (insertAfterIdx !== -1) {
+        const indent = pageLines[insertAfterIdx].match(/^(\s*)/)[1];
         const jsxLine = `${indent}<${meta.componentName} ${jsxProps} />`;
-        pageLines.splice(anchorLineIdx + 1, 0, jsxLine);
+        pageLines.splice(insertAfterIdx + 1, 0, jsxLine);
         fs.writeFileSync(fullPage, pageLines.join("\n"), "utf8");
-        console.log(`  [patched] ${pageFile} — added <${meta.componentName} /> after <${afterSection.name}>`);
+        console.log(`  [patched] ${pageFile} — added <${meta.componentName} />${insertLabel}`);
       }
     }
   }

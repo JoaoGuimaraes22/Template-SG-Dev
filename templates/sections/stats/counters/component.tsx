@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useInView } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 
 interface StatItem {
   label: string;
@@ -63,7 +63,12 @@ export default function StatsCounters({
       className="border-y border-neutral-200 bg-neutral-50 px-6 py-4 md:px-10"
     >
       {(statsCounters.title_line1 || statsCounters.title_line2) && (
-        <div className="mb-6 text-center">
+        <motion.div
+          className="mb-6 text-center"
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] as const }}
+        >
           {statsCounters.title_line1 && (
             <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
               {statsCounters.title_line1}
@@ -74,7 +79,7 @@ export default function StatsCounters({
               {statsCounters.title_line2}
             </p>
           )}
-        </div>
+        </motion.div>
       )}
 
       <div

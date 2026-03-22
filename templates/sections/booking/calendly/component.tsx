@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion, useInView } from "framer-motion";
 
-// TODO: TEMPLATE — Replace YOUR_CALENDLY_URL with your Calendly scheduling link.
+// TODO: TEMPLATE — Set CALENDLY_URL below to your Calendly scheduling link.
 // Example: https://calendly.com/your-name/30min
 const CALENDLY_URL = "YOUR_CALENDLY_URL";
 

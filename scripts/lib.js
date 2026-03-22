@@ -567,8 +567,8 @@ function discoverSections() {
 }
 
 // Parses page.tsx for <ComponentName lines. Returns [{ name, line, indent }].
-// Excludes structural components (Hero, Footer, etc.).
-function parseSectionsFromPage(pageFile) {
+// Excludes structural components (Hero, Footer, etc.) unless includeStructural is true.
+function parseSectionsFromPage(pageFile, { includeStructural = false } = {}) {
   const full = path.join(_target, pageFile);
   if (!fs.existsSync(full)) return [];
   const lines = fs.readFileSync(full, "utf8").split("\n");
@@ -578,7 +578,7 @@ function parseSectionsFromPage(pageFile) {
     const m = lines[i].match(re);
     if (!m) continue;
     const name = m[2];
-    if (STRUCTURAL_COMPONENTS.includes(name)) continue;
+    if (!includeStructural && STRUCTURAL_COMPONENTS.includes(name)) continue;
     results.push({ name, line: i + 1, indent: m[1].length });
   }
   return results;

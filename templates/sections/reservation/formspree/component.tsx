@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 
-// Replace with your Formspree form ID — get it at formspree.io
+// TODO: TEMPLATE — Set FORMSPREE_ID below to your form ID — get it at formspree.io
 const FORMSPREE_ID = "YOUR_FORMSPREE_ID";
 
 interface ReservationDict {
