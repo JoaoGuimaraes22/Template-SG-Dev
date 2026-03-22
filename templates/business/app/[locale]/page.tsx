@@ -7,7 +7,6 @@ import Reviews from "./components/Reviews";
 import FAQ from "./components/FAQ";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
-import FloatingCTA from "./components/FloatingCTA";
 
 export default async function BusinessPage({
   params,
@@ -26,7 +25,6 @@ export default async function BusinessPage({
       <FAQ faq={dict.faq} />
       <Contact contact={dict.contact} />
       <Footer footer={dict.footer} logo={dict.navbar.logo} />
-      <FloatingCTA cta={dict.cta} />
     </>
   );
 }
