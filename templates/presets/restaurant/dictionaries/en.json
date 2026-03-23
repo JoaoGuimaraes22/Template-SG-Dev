@@ -1,0 +1,517 @@
+{
+  "navbar": {
+    "logo": "Gutsy",
+    "cta": "Book a Table",
+    "links": [
+      {
+        "id": "about",
+        "label": "About"
+      },
+      {
+        "id": "menu",
+        "label": "Menu"
+      },
+      {
+        "id": "services",
+        "label": "Why Us"
+      },
+      {
+        "id": "testimonials",
+        "label": "Reviews"
+      },
+      {
+        "id": "pricing",
+        "label": "Deals"
+      },
+      {
+        "id": "faq",
+        "label": "FAQ"
+      },
+      {
+        "id": "contact",
+        "label": "Contact"
+      }
+    ]
+  },
+  "hero": {
+    "title_line1": "BOLD",
+    "title_line2": "BURGERS",
+    "tagline": "Smash-style burgers made with local beef, fresh-baked buns, and zero compromises. Lisbon's favourite fast-casual.",
+    "cta": "Book a Table",
+    "cta_secondary": "See Menu",
+    "stats": [
+      {
+        "value": "50K+",
+        "label": "Burgers Smashed"
+      },
+      {
+        "value": "4.9★",
+        "label": "Google Rating"
+      },
+      {
+        "value": "5+",
+        "label": "Years in Lisbon"
+      }
+    ]
+  },
+  "about": {
+    "title_line1": "REAL",
+    "title_line2": "FOOD",
+    "body": "We started Gutsy because we were tired of bad burgers. Thin patties, soggy buns, mystery meat — we said no thanks.\n\nEvery Gutsy burger is made with 100% local beef, smashed to order on a screaming hot griddle, and served on a fresh bun baked down the street. Simple. Honest. Delicious.",
+    "stats": [
+      {
+        "value": "2020",
+        "label": "Founded"
+      },
+      {
+        "value": "50K+",
+        "label": "Burgers Smashed"
+      },
+      {
+        "value": "4.9★",
+        "label": "Google Rating"
+      }
+    ]
+  },
+  "services": {
+    "title_line1": "WHY",
+    "title_line2": "GUTSY",
+    "items": [
+      {
+        "icon": "🔥",
+        "title": "Smash Style",
+        "description": "Pressed thin on a screaming hot griddle for maximum crust and flavour in every bite."
+      },
+      {
+        "icon": "🥩",
+        "title": "Local Beef",
+        "description": "100% Portuguese beef sourced from local farms. No fillers, no freezing, ever."
+      },
+      {
+        "icon": "🍞",
+        "title": "Fresh Buns Daily",
+        "description": "Our brioche buns are baked every morning by a local bakery just around the corner."
+      },
+      {
+        "icon": "⚡",
+        "title": "Fast & Fresh",
+        "description": "Ready in under 10 minutes. Hot, fresh, and built to order — every single time."
+      },
+      {
+        "icon": "🛵",
+        "title": "Fast Delivery",
+        "description": "Order online or via Glovo and Uber Eats. Hot to your door, faster than you think."
+      },
+      {
+        "icon": "🥤",
+        "title": "House Specials",
+        "description": "Unique sauces, thick shakes, and loaded fries you won't find anywhere else in the city."
+      }
+    ]
+  },
+  "reviews": {
+    "title_line1": "WHAT PEOPLE",
+    "title_line2": "SAY",
+    "subtitle": "Real feedback from real burger fans.",
+    "items": [
+      {
+        "quote": "Best burger in Lisbon, hands down. The smash technique makes all the difference — that crust is incredible.",
+        "name": "Ana P.",
+        "role": "Lisboa",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "I've been coming every week since they opened. The Smoky burger is absolutely unreal. Never gets old.",
+        "name": "Miguel R.",
+        "role": "Lisbon",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "Finally, proper American-style smash burgers in Portugal. Gutsy absolutely nailed it. Worth every cent.",
+        "name": "Tom H.",
+        "role": "Expat, Lisboa",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "Perfect for a quick lunch. Always fresh, always hot, always exactly what you want from a burger joint.",
+        "name": "Sofia M.",
+        "role": "Bairro Alto",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "The loaded fries alone are worth the trip. I don't know what they put in that cheese sauce but I need more.",
+        "name": "Pedro C.",
+        "role": "Lisboa",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "Great vibe, great food, great price. This is our go-to Friday night spot. The milkshakes are dangerous.",
+        "name": "Mariana L.",
+        "role": "Chiado",
+        "avatar": null,
+        "rating": 5
+      }
+    ]
+  },
+  "faq": {
+    "title_line1": "COMMON",
+    "title_line2": "QUESTIONS",
+    "items": [
+      {
+        "question": "Do you offer delivery?",
+        "answer": "Yes! Order directly on our site or through Glovo and Uber Eats. We deliver within a 5km radius of our restaurant."
+      },
+      {
+        "question": "Are there vegetarian options?",
+        "answer": "Absolutely. Our Fungi Burger features a plant-based patty and all the same bold toppings. Delicious without the beef."
+      },
+      {
+        "question": "Can I book a table?",
+        "answer": "Walk-ins are always welcome. For groups of 6 or more, we recommend calling ahead so we can reserve the right space for you."
+      },
+      {
+        "question": "What are your opening hours?",
+        "answer": "Monday to Thursday 12pm–10pm, Friday and Saturday 12pm–11pm, Sunday 12pm–9pm. Kitchen closes 30 minutes before closing."
+      },
+      {
+        "question": "Do you cater events?",
+        "answer": "Yes! We handle group orders and private events. Get in touch via our contact form and we'll sort out the details."
+      },
+      {
+        "question": "Are your ingredients always fresh?",
+        "answer": "Always. We prep fresh every single day and never freeze our patties. If we run out, we run out — that's the deal."
+      }
+    ]
+  },
+  "contact": {
+    "title_line1": "COME",
+    "title_line2": "FIND US",
+    "body": "Got a question, a big order, or just want to say hi? Reach out — we're friendly.",
+    "book_cta": "Book a Table",
+    "order_cta": "Order Online",
+    "phone": "+351 912 345 678",
+    "email": "hello@gutsy.pt",
+    "address": "Rua do Ouro 45, 1100-060 Lisboa",
+    "hours": "Mon–Thu 12pm–10pm · Fri–Sat 12pm–11pm · Sun 12pm–9pm",
+    "map_link": "https://maps.google.com/?q=Rua+do+Ouro+45+Lisboa"
+  },
+  "footer": {
+    "tagline": "Smash burgers made with local beef and zero compromises.",
+    "address": "Rua do Ouro 45, 1100-060 Lisboa",
+    "hours": "Mon–Thu 12pm–10pm · Fri–Sat 12pm–11pm",
+    "phone": "+351 912 345 678",
+    "email": "hello@gutsy.pt",
+    "copyright": "© 2025 Gutsy Burgers. All rights reserved.",
+    "book_cta": "Book a Table",
+    "explore_label": "Explore",
+    "hours_label": "Hours",
+    "find_us_label": "Find Us",
+    "made_in": "Made in Lisbon",
+    "nav_links": [
+      {
+        "id": "about",
+        "label": "About"
+      },
+      {
+        "id": "menu",
+        "label": "Menu"
+      },
+      {
+        "id": "testimonials",
+        "label": "Reviews"
+      },
+      {
+        "id": "faq",
+        "label": "FAQ"
+      },
+      {
+        "id": "contact",
+        "label": "Contact"
+      }
+    ]
+  },
+  "menu": {
+    "title": "Our Menu",
+    "subtitle": "Fresh patties, local beef, baked-daily buns — built to order",
+    "chefs_pick": "Chef's Pick",
+    "categories": [
+      {
+        "key": "burgers",
+        "label": "Burgers",
+        "highlight_image": "/menu/burgers.jpg",
+        "items": [
+          {
+            "name": "The OG",
+            "description": "Double smash patty, American cheese, special sauce, pickles, white onion",
+            "price": "€12",
+            "image": "/menu/burger-og.jpg"
+          },
+          {
+            "name": "Gutsy Classic",
+            "description": "Single patty, lettuce, tomato, red onion, mustard, ketchup",
+            "price": "€10",
+            "image": "/menu/burger-gutsy-classic.jpg"
+          },
+          {
+            "name": "The Smoky",
+            "description": "Double patty, bacon, smoked cheddar, BBQ sauce, crispy fried onions",
+            "price": "€13",
+            "image": "/menu/burger-smoky.jpg"
+          },
+          {
+            "name": "Fungi Burger",
+            "description": "Sautéed mushrooms, Swiss cheese, truffle mayo, rocket — plant-based patty available",
+            "price": "€13",
+            "image": "/menu/burger-fungi.jpg"
+          },
+          {
+            "name": "Spicy Diablo",
+            "description": "Double patty, jalapeños, pepper jack, sriracha mayo, pickled red onion",
+            "price": "€13",
+            "image": "/menu/burger-spicy-diablo.jpg"
+          }
+        ]
+      },
+      {
+        "key": "sides",
+        "label": "Sides",
+        "items": [
+          {
+            "name": "Smash Fries",
+            "description": "Double-fried crispy fries with house seasoning and sea salt",
+            "price": "€4",
+            "image": "/menu/sides-smash-fries.jpg"
+          },
+          {
+            "name": "Loaded Fries",
+            "description": "Crispy fries with cheese sauce, bacon bits and spring onion",
+            "price": "€7",
+            "image": "/menu/sides-loaded-fries.jpg"
+          },
+          {
+            "name": "Onion Rings",
+            "description": "Beer-battered rings with chipotle dipping sauce",
+            "price": "€5",
+            "image": "/menu/sides-onion-rings.jpg"
+          },
+          {
+            "name": "Coleslaw",
+            "description": "House-made with apple cider dressing and fresh herbs",
+            "price": "€3",
+            "image": "/menu/sides-coleslaw.jpg"
+          }
+        ]
+      },
+      {
+        "key": "drinks",
+        "label": "Drinks",
+        "items": [
+          {
+            "name": "Thick Milkshake",
+            "description": "Vanilla, chocolate or strawberry — blended thick the way it should be",
+            "price": "€6",
+            "image": "/menu/drinks-milkshake.jpg"
+          },
+          {
+            "name": "Craft Beer",
+            "description": "Local rotating tap selection, always fresh",
+            "price": "€4",
+            "image": "/menu/drinks-craft-beer.jpg"
+          },
+          {
+            "name": "House Lemonade",
+            "description": "Fresh-squeezed with mint, served over ice",
+            "price": "€4",
+            "image": "/menu/drinks-lemonade.jpg"
+          },
+          {
+            "name": "Craft Soda",
+            "description": "Cola, ginger beer or sparkling lemon",
+            "price": "€3",
+            "image": "/menu/drinks-craft-soda.jpg"
+          }
+        ]
+      },
+      {
+        "key": "desserts",
+        "label": "Desserts",
+        "items": [
+          {
+            "name": "Churro Bites",
+            "description": "Warm cinnamon churros with dulce de leche dipping sauce",
+            "price": "€5",
+            "image": "/menu/desserts-churro.jpg"
+          },
+          {
+            "name": "Brownie",
+            "description": "Warm dark chocolate brownie with a scoop of vanilla ice cream",
+            "price": "€6",
+            "image": "/menu/desserts-brownie.jpg"
+          },
+          {
+            "name": "Shake & Brownie",
+            "description": "One thick shake + one brownie — the full finish",
+            "price": "€10",
+            "image": "/menu/desserts-shake-brownie.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  "galleryStrip": {
+    "images": [
+      { "src": "/gallery/1.jpg", "alt": "Gutsy smash burger fresh off the griddle" },
+      { "src": "/gallery/2.jpg", "alt": "Loaded fries with cheese sauce" },
+      { "src": "/gallery/3.jpg", "alt": "Inside the Gutsy restaurant" },
+      { "src": "/gallery/4.jpg", "alt": "Thick milkshake" },
+      { "src": "/gallery/5.jpg", "alt": "Smashing a burger patty" },
+      { "src": "/gallery/6.jpg", "alt": "Gutsy burger close-up" },
+      { "src": "/gallery/7.jpg", "alt": "Onion rings and dipping sauce" },
+      { "src": "/gallery/8.jpg", "alt": "The team at Gutsy" }
+    ]
+  },
+  "reserveBar": {
+    "cta_reserve": "Book a Table",
+    "cta_order": "Order Online",
+    "order_url": "https://gutsy.pt/order"
+  },
+  "pricing": {
+    "title_line1": "MEAL",
+    "title_line2": "DEALS",
+    "subtitle": "More burger for less. Pick your combo and save.",
+    "popular_label": "Best Value",
+    "cta": "Order Now",
+    "disclaimer": "Deals available for dine-in and takeaway. Prices include VAT.",
+    "plans": [
+      {
+        "name": "Solo",
+        "price": "€14",
+        "period": "any burger + fries + drink",
+        "popular": false,
+        "features": [
+          "Any single burger",
+          "Smash Fries",
+          "Can of soda or water",
+          "Available all day"
+        ]
+      },
+      {
+        "name": "Combo",
+        "price": "€17",
+        "period": "burger + loaded fries + shake",
+        "popular": true,
+        "features": [
+          "Any single burger",
+          "Loaded Fries",
+          "Thick milkshake",
+          "Available all day",
+          "Save €4 vs à la carte"
+        ]
+      },
+      {
+        "name": "Party Bundle",
+        "price": "€49",
+        "period": "4 burgers + 4 fries + 4 drinks",
+        "popular": false,
+        "features": [
+          "4 burgers of your choice",
+          "4 Smash Fries",
+          "4 drinks",
+          "Ideal for groups",
+          "Save €9 vs individual"
+        ]
+      }
+    ]
+  },
+  "googleReviews": {
+    "title_line1": "LOVED IT?",
+    "title_line2": "TELL THE WORLD.",
+    "subtitle": "Your review helps other burger fans find us — and it makes our team's day.",
+    "cta": "Leave a Google Review",
+    "rating_label": "Rated on Google"
+  },
+  "statsCounters": {
+    "title_line1": "BY THE",
+    "title_line2": "NUMBERS",
+    "items": [
+      {
+        "label": "Burgers Smashed",
+        "target": 50000,
+        "suffix": "+"
+      },
+      {
+        "label": "5-Star Reviews",
+        "target": 98,
+        "suffix": "%"
+      },
+      {
+        "label": "Years in Lisbon",
+        "target": 5,
+        "suffix": "+"
+      },
+      {
+        "label": "Menu Items",
+        "target": 20,
+        "suffix": "+"
+      }
+    ]
+  },
+  "reservation": {
+    "title": "Book a Table",
+    "subtitle": "Reserve your spot — we'll confirm within a few hours",
+    "name_label": "Your name",
+    "contact_label": "Email or phone number",
+    "note_label": "Special requests (optional)",
+    "guests_label": "Number of guests",
+    "date_label": "Pick a date",
+    "time_label": "Preferred time",
+    "confirm_cta": "Confirm Reservation",
+    "success_title": "Reservation Received!",
+    "success_body": "We'll confirm your booking via email or phone shortly.",
+    "back_cta": "Make another reservation",
+    "times": [
+      "12:00 PM",
+      "12:30 PM",
+      "1:00 PM",
+      "1:30 PM",
+      "2:00 PM",
+      "2:30 PM",
+      "6:00 PM",
+      "6:30 PM",
+      "7:00 PM",
+      "7:30 PM",
+      "8:00 PM",
+      "8:30 PM",
+      "9:00 PM",
+      "9:30 PM",
+      "10:00 PM",
+      "10:30 PM"
+    ],
+    "days": ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ],
+    "guests_options": ["1 guest", "2 guests", "3 guests", "4 guests", "5 guests", "6+ guests"]
+  },
+  "contactMap": {
+    "address": "Rua do Ouro 45\n1100-060 Lisboa",
+    "mapsEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3113.2!2d-9.138!3d38.709!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRua+do+Ouro+45+Lisboa!5e0!3m2!1sen!2spt!4v1",
+    "mapTitle": "Gutsy Burgers location"
+  }
+}

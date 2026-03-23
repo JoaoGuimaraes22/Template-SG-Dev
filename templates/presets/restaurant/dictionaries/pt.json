@@ -1,0 +1,517 @@
+{
+  "navbar": {
+    "logo": "Gutsy",
+    "cta": "Reservar Mesa",
+    "links": [
+      {
+        "id": "about",
+        "label": "Sobre"
+      },
+      {
+        "id": "menu",
+        "label": "Menu"
+      },
+      {
+        "id": "services",
+        "label": "Porquê Nós"
+      },
+      {
+        "id": "testimonials",
+        "label": "Opiniões"
+      },
+      {
+        "id": "pricing",
+        "label": "Promoções"
+      },
+      {
+        "id": "faq",
+        "label": "FAQ"
+      },
+      {
+        "id": "contact",
+        "label": "Contacto"
+      }
+    ]
+  },
+  "hero": {
+    "title_line1": "HAMBÚRGUERES",
+    "title_line2": "A SÉRIO",
+    "tagline": "Smash burgers com carne local, pão fresco e zero compromissos. O favorito de Lisboa.",
+    "cta": "Reservar Mesa",
+    "cta_secondary": "Ver Menu",
+    "stats": [
+      {
+        "value": "50K+",
+        "label": "Hambúrgueres Feitos"
+      },
+      {
+        "value": "4.9★",
+        "label": "Avaliação Google"
+      },
+      {
+        "value": "5+",
+        "label": "Anos em Lisboa"
+      }
+    ]
+  },
+  "about": {
+    "title_line1": "COMIDA",
+    "title_line2": "A VERDADE",
+    "body": "Criámos o Gutsy porque estávamos fartos de hambúrgueres medíocres. Bifes finos, pão encharcado, carne de origem duvidosa — dissemos que não.\n\nCada hambúrguer Gutsy é feito com 100% de carne portuguesa, prensado na hora numa chapa bem quente, e servido em pão fresco saído da padaria ao lado. Simples. Honesto. Delicioso.",
+    "stats": [
+      {
+        "value": "2020",
+        "label": "Fundado"
+      },
+      {
+        "value": "50K+",
+        "label": "Hambúrgueres Feitos"
+      },
+      {
+        "value": "4.9★",
+        "label": "Avaliação Google"
+      }
+    ]
+  },
+  "services": {
+    "title_line1": "PORQUÊ",
+    "title_line2": "GUTSY",
+    "items": [
+      {
+        "icon": "🔥",
+        "title": "Técnica Smash",
+        "description": "Prensado fino numa chapa a alta temperatura para máxima crosta e sabor em cada dentada."
+      },
+      {
+        "icon": "🥩",
+        "title": "Carne Local",
+        "description": "100% carne bovina portuguesa de produtores locais. Sem aditivos, nunca congelada."
+      },
+      {
+        "icon": "🍞",
+        "title": "Pão Fresco Diário",
+        "description": "Os nossos pães de brioche são cozidos todas as manhãs numa padaria aqui ao lado."
+      },
+      {
+        "icon": "⚡",
+        "title": "Rápido e Fresco",
+        "description": "Pronto em menos de 10 minutos. Quente, fresco e feito na hora — sempre."
+      },
+      {
+        "icon": "🛵",
+        "title": "Entrega Rápida",
+        "description": "Encomenda no nosso site ou via Glovo e Uber Eats. Quente à porta em minutos."
+      },
+      {
+        "icon": "🥤",
+        "title": "Especialidades",
+        "description": "Molhos únicos, milkshakes espessos e batatas carregadas que não vais encontrar mais em lado nenhum."
+      }
+    ]
+  },
+  "reviews": {
+    "title_line1": "O QUE AS",
+    "title_line2": "PESSOAS DIZEM",
+    "subtitle": "Opiniões reais de fãs de hambúrgueres reais.",
+    "items": [
+      {
+        "quote": "O melhor hambúrguer de Lisboa, sem dúvida. A técnica smash faz toda a diferença — aquela crosta é incrível.",
+        "name": "Ana P.",
+        "role": "Lisboa",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "Venho cá todas as semanas desde que abriu. O Smoky burger é absolutamente incrível. Nunca enjoa.",
+        "name": "Miguel R.",
+        "role": "Lisboa",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "Finalmente smash burgers a sério em Portugal. O Gutsy acertou em cheio. Vale cada cêntimo.",
+        "name": "Tom H.",
+        "role": "Expat, Lisboa",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "Perfeito para um almoço rápido. Sempre fresco, sempre quente, sempre exatamente o que queres.",
+        "name": "Sofia M.",
+        "role": "Bairro Alto",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "As batatas carregadas sozinhas valem a viagem. Não sei o que têm no molho de queijo mas preciso de mais.",
+        "name": "Pedro C.",
+        "role": "Lisboa",
+        "avatar": null,
+        "rating": 5
+      },
+      {
+        "quote": "Bom ambiente, boa comida, bom preço. O nosso sítio preferido para a noite de sexta. Os milkshakes são viciantes.",
+        "name": "Mariana L.",
+        "role": "Chiado",
+        "avatar": null,
+        "rating": 5
+      }
+    ]
+  },
+  "faq": {
+    "title_line1": "PERGUNTAS",
+    "title_line2": "FREQUENTES",
+    "items": [
+      {
+        "question": "Fazem entregas?",
+        "answer": "Sim! Podes encomendar diretamente no nosso site ou através do Glovo e Uber Eats. Entregamos num raio de 5km do restaurante."
+      },
+      {
+        "question": "Têm opções vegetarianas?",
+        "answer": "Claro. O nosso Fungi Burger tem um bife de origem vegetal com os mesmos toppings saborosos. Uma delícia sem carne."
+      },
+      {
+        "question": "Posso reservar mesa?",
+        "answer": "Aceitamos sempre walk-ins. Para grupos de 6 ou mais, recomendamos ligar antes para garantirmos o espaço certo."
+      },
+      {
+        "question": "Quais são os vossos horários?",
+        "answer": "Segunda a quinta das 12h às 22h, sexta e sábado das 12h às 23h, domingo das 12h às 21h. Cozinha fecha 30 minutos antes."
+      },
+      {
+        "question": "Fazem catering para eventos?",
+        "answer": "Sim! Tratamos de encomendas grandes e eventos privados. Contacta-nos pelo formulário e combinamos tudo."
+      },
+      {
+        "question": "Os ingredientes são sempre frescos?",
+        "answer": "Sempre. Preparamos tudo de fresco todos os dias e nunca congelamos os bifes. Se acabar, acabou — essa é a nossa política."
+      }
+    ]
+  },
+  "contact": {
+    "title_line1": "VÊM",
+    "title_line2": "VISITAR-NOS",
+    "body": "Tens uma dúvida, uma encomenda grande ou só queres dizer olá? Fala connosco — somos simpáticos.",
+    "book_cta": "Reservar Mesa",
+    "order_cta": "Encomendar Online",
+    "phone": "+351 912 345 678",
+    "email": "hello@gutsy.pt",
+    "address": "Rua do Ouro 45, 1100-060 Lisboa",
+    "hours": "Seg–Qui 12h–22h · Sex–Sáb 12h–23h · Dom 12h–21h",
+    "map_link": "https://maps.google.com/?q=Rua+do+Ouro+45+Lisboa"
+  },
+  "footer": {
+    "tagline": "Smash burgers com carne local e zero compromissos.",
+    "address": "Rua do Ouro 45, 1100-060 Lisboa",
+    "hours": "Seg–Qui 12h–22h · Sex–Sáb 12h–23h",
+    "phone": "+351 912 345 678",
+    "email": "hello@gutsy.pt",
+    "copyright": "© 2025 Gutsy Burgers. Todos os direitos reservados.",
+    "book_cta": "Reservar Mesa",
+    "explore_label": "Explorar",
+    "hours_label": "Horário",
+    "find_us_label": "Encontre-nos",
+    "made_in": "Feito em Lisboa",
+    "nav_links": [
+      {
+        "id": "about",
+        "label": "Sobre"
+      },
+      {
+        "id": "menu",
+        "label": "Menu"
+      },
+      {
+        "id": "testimonials",
+        "label": "Opiniões"
+      },
+      {
+        "id": "faq",
+        "label": "FAQ"
+      },
+      {
+        "id": "contact",
+        "label": "Contacto"
+      }
+    ]
+  },
+  "menu": {
+    "title": "O Nosso Menu",
+    "subtitle": "Bifes frescos, carne local, pão cozido diariamente — feito na hora",
+    "chefs_pick": "Escolha do Chef",
+    "categories": [
+      {
+        "key": "burgers",
+        "label": "Hambúrgueres",
+        "highlight_image": "/menu/burgers.jpg",
+        "items": [
+          {
+            "name": "The OG",
+            "description": "Duplo smash, queijo americano, molho especial, pickles, cebola branca",
+            "price": "€12",
+            "image": "/menu/burger-og.jpg"
+          },
+          {
+            "name": "Gutsy Classic",
+            "description": "Bife simples, alface, tomate, cebola roxa, mostarda, ketchup",
+            "price": "€10",
+            "image": "/menu/burger-gutsy-classic.jpg"
+          },
+          {
+            "name": "The Smoky",
+            "description": "Duplo smash, bacon, cheddar fumado, molho BBQ, cebola frita crocante",
+            "price": "€13",
+            "image": "/menu/burger-smoky.jpg"
+          },
+          {
+            "name": "Fungi Burger",
+            "description": "Cogumelos salteados, queijo suíço, maionese de trufa, rúcula — bife vegetal disponível",
+            "price": "€13",
+            "image": "/menu/burger-fungi.jpg"
+          },
+          {
+            "name": "Spicy Diablo",
+            "description": "Duplo smash, jalapeños, queijo picante, maionese sriracha, cebola roxa em pickles",
+            "price": "€13",
+            "image": "/menu/burger-spicy-diablo.jpg"
+          }
+        ]
+      },
+      {
+        "key": "sides",
+        "label": "Acompanhamentos",
+        "items": [
+          {
+            "name": "Smash Fries",
+            "description": "Batatas fritas duplamente fritas com tempero da casa e flor de sal",
+            "price": "€4",
+            "image": "/menu/sides-smash-fries.jpg"
+          },
+          {
+            "name": "Loaded Fries",
+            "description": "Batatas fritas com molho de queijo, bacon e cebolinho",
+            "price": "€7",
+            "image": "/menu/sides-loaded-fries.jpg"
+          },
+          {
+            "name": "Onion Rings",
+            "description": "Anéis de cebola panados em cerveja com molho chipotle",
+            "price": "€5",
+            "image": "/menu/sides-onion-rings.jpg"
+          },
+          {
+            "name": "Coleslaw",
+            "description": "Coleslaw da casa com vinagre de sidra e ervas frescas",
+            "price": "€3",
+            "image": "/menu/sides-coleslaw.jpg"
+          }
+        ]
+      },
+      {
+        "key": "drinks",
+        "label": "Bebidas",
+        "items": [
+          {
+            "name": "Milkshake Espesso",
+            "description": "Baunilha, chocolate ou morango — batido espesso como deve ser",
+            "price": "€6",
+            "image": "/menu/drinks-milkshake.jpg"
+          },
+          {
+            "name": "Cerveja Artesanal",
+            "description": "Torneira local rotativa, sempre fresca",
+            "price": "€4",
+            "image": "/menu/drinks-craft-beer.jpg"
+          },
+          {
+            "name": "Limonada da Casa",
+            "description": "Espremida na hora com menta, servida com gelo",
+            "price": "€4",
+            "image": "/menu/drinks-lemonade.jpg"
+          },
+          {
+            "name": "Refrigerante Artesanal",
+            "description": "Cola, ginger beer ou limão com gás",
+            "price": "€3",
+            "image": "/menu/drinks-craft-soda.jpg"
+          }
+        ]
+      },
+      {
+        "key": "desserts",
+        "label": "Sobremesas",
+        "items": [
+          {
+            "name": "Churro Bites",
+            "description": "Churros quentes com canela e molho de dulce de leche",
+            "price": "€5",
+            "image": "/menu/desserts-churro.jpg"
+          },
+          {
+            "name": "Brownie",
+            "description": "Brownie de chocolate quente com gelado de baunilha",
+            "price": "€6",
+            "image": "/menu/desserts-brownie.jpg"
+          },
+          {
+            "name": "Shake & Brownie",
+            "description": "Um milkshake espesso + um brownie — o fim perfeito",
+            "price": "€10",
+            "image": "/menu/desserts-shake-brownie.jpg"
+          }
+        ]
+      }
+    ]
+  },
+  "galleryStrip": {
+    "images": [
+      { "src": "/gallery/1.jpg", "alt": "Hambúrguer smash do Gutsy saído da chapa" },
+      { "src": "/gallery/2.jpg", "alt": "Batatas loaded com molho de queijo" },
+      { "src": "/gallery/3.jpg", "alt": "Interior do Gutsy" },
+      { "src": "/gallery/4.jpg", "alt": "Milkshake espesso" },
+      { "src": "/gallery/5.jpg", "alt": "A esmagar um bife na chapa" },
+      { "src": "/gallery/6.jpg", "alt": "Hambúrguer Gutsy em close-up" },
+      { "src": "/gallery/7.jpg", "alt": "Onion rings com molho" },
+      { "src": "/gallery/8.jpg", "alt": "A equipa do Gutsy" }
+    ]
+  },
+  "reserveBar": {
+    "cta_reserve": "Reservar Mesa",
+    "cta_order": "Encomendar Online",
+    "order_url": "https://gutsy.pt/order"
+  },
+  "pricing": {
+    "title_line1": "PROMOÇÕES",
+    "title_line2": "ESPECIAIS",
+    "subtitle": "Mais hambúrguer por menos. Escolhe o teu combo e poupa.",
+    "popular_label": "Melhor Valor",
+    "cta": "Pedir Agora",
+    "disclaimer": "Promoções disponíveis para comer no local e takeaway. Preços incluem IVA.",
+    "plans": [
+      {
+        "name": "Solo",
+        "price": "€14",
+        "period": "hambúrguer + batatas + bebida",
+        "popular": false,
+        "features": [
+          "Qualquer hambúrguer simples",
+          "Smash Fries",
+          "Lata de refrigerante ou água",
+          "Disponível todo o dia"
+        ]
+      },
+      {
+        "name": "Combo",
+        "price": "€17",
+        "period": "hambúrguer + loaded fries + shake",
+        "popular": true,
+        "features": [
+          "Qualquer hambúrguer simples",
+          "Loaded Fries",
+          "Milkshake espesso",
+          "Disponível todo o dia",
+          "Poupa €4 vs à la carte"
+        ]
+      },
+      {
+        "name": "Pack Grupo",
+        "price": "€49",
+        "period": "4 hambúrgueres + 4 batatas + 4 bebidas",
+        "popular": false,
+        "features": [
+          "4 hambúrgueres à escolha",
+          "4 Smash Fries",
+          "4 bebidas",
+          "Ideal para grupos",
+          "Poupa €9 vs individual"
+        ]
+      }
+    ]
+  },
+  "googleReviews": {
+    "title_line1": "GOSTASTE?",
+    "title_line2": "CONTA AO MUNDO.",
+    "subtitle": "A tua opinião ajuda outros fãs de hambúrgueres a encontrar-nos — e faz o dia da nossa equipa.",
+    "cta": "Deixar uma Avaliação no Google",
+    "rating_label": "Avaliado no Google"
+  },
+  "statsCounters": {
+    "title_line1": "EM",
+    "title_line2": "NÚMEROS",
+    "items": [
+      {
+        "label": "Hambúrgueres Feitos",
+        "target": 50000,
+        "suffix": "+"
+      },
+      {
+        "label": "Avaliações 5 Estrelas",
+        "target": 98,
+        "suffix": "%"
+      },
+      {
+        "label": "Anos em Lisboa",
+        "target": 5,
+        "suffix": "+"
+      },
+      {
+        "label": "Opções no Menu",
+        "target": 20,
+        "suffix": "+"
+      }
+    ]
+  },
+  "reservation": {
+    "title": "Reservar Mesa",
+    "subtitle": "Reserve o seu lugar — confirmamos em poucas horas",
+    "name_label": "O seu nome",
+    "contact_label": "Email ou número de telemóvel",
+    "note_label": "Pedidos especiais (opcional)",
+    "guests_label": "Número de pessoas",
+    "date_label": "Escolha uma data",
+    "time_label": "Hora preferida",
+    "confirm_cta": "Confirmar Reserva",
+    "success_title": "Reserva Recebida!",
+    "success_body": "Confirmamos a sua reserva por email ou telemóvel em breve.",
+    "back_cta": "Fazer outra reserva",
+    "times": [
+      "12:00",
+      "12:30",
+      "13:00",
+      "13:30",
+      "14:00",
+      "14:30",
+      "18:00",
+      "18:30",
+      "19:00",
+      "19:30",
+      "20:00",
+      "20:30",
+      "21:00",
+      "21:30",
+      "22:00",
+      "22:30"
+    ],
+    "days": ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
+    "months": [
+      "Janeiro",
+      "Fevereiro",
+      "Março",
+      "Abril",
+      "Maio",
+      "Junho",
+      "Julho",
+      "Agosto",
+      "Setembro",
+      "Outubro",
+      "Novembro",
+      "Dezembro"
+    ],
+    "guests_options": ["1 pessoa", "2 pessoas", "3 pessoas", "4 pessoas", "5 pessoas", "6+ pessoas"]
+  },
+  "contactMap": {
+    "address": "Rua do Ouro 45\n1100-060 Lisboa",
+    "mapsEmbedUrl": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3113.2!2d-9.138!3d38.709!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2sRua+do+Ouro+45+Lisboa!5e0!3m2!1spt!2spt!4v1",
+    "mapTitle": "Localização do Gutsy Burgers"
+  }
+}

@@ -1,20 +1,92 @@
 #!/usr/bin/env node
 // launchkit — Build Showcase Site
-// Generates a Next.js app in site/ that serves each template as a live sub-route.
-// Re-run after template changes to rebuild.
+// Generates a Next.js app in site/ that serves each extracted template as a live sub-route.
+// Auto-discovers templates from templates/presets/ (skips "base").
+// Re-run after extracting or updating templates to rebuild.
 //
 // Usage: node scripts/build-showcase.js
 
 const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
+const { checkHelp } = require("./lib");
+
+checkHelp(`
+launchkit — Build Showcase Site
+
+  Generates a Next.js app in site/ that serves each extracted template
+  as a live sub-route. Auto-discovers templates from templates/presets/.
+
+Usage:
+  node scripts/build-showcase.js
+
+Options:
+  -h, --help    Show this help message
+
+Prerequisites:
+  Extract at least one template first:
+    node scripts/extract.js --source ../my-site --name my-template
+`);
 
 const TOOL_ROOT = path.resolve(__dirname, "..");
 const SITE_DIR = path.join(TOOL_ROOT, "site");
 const BASE_DIR = path.join(TOOL_ROOT, "templates/presets/base");
+const PRESETS_DIR = path.join(TOOL_ROOT, "templates/presets");
 
-// Templates to showcase (skip blank — nothing to show)
-const TEMPLATES = ["business", "restaurant"];
+// ── Auto-discover templates ─────────────────────────────────────────────────
+
+function discoverTemplates() {
+  if (!fs.existsSync(PRESETS_DIR)) return [];
+  return fs.readdirSync(PRESETS_DIR, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && d.name !== "base")
+    .filter((d) => {
+      // Must have at least app/[locale]/page.tsx or app/[locale]/components/
+      const presetDir = path.join(PRESETS_DIR, d.name);
+      return (
+        fs.existsSync(path.join(presetDir, "app/[locale]/page.tsx")) ||
+        fs.existsSync(path.join(presetDir, "app/[locale]/components"))
+      );
+    })
+    .map((d) => d.name);
+}
+
+// Read accent color from the template module if available
+function getTemplateAccentColor(tmpl) {
+  const modulePath = path.join(TOOL_ROOT, "scripts/templates", `${tmpl}.js`);
+  if (fs.existsSync(modulePath)) {
+    try {
+      const mod = require(modulePath);
+      // Read DETECTED_COLOR from module source (it's not exported)
+      const src = fs.readFileSync(modulePath, "utf8");
+      const match = src.match(/DETECTED_COLOR\s*=\s*["']([^"']+)["']/);
+      if (match) return match[1];
+    } catch { /* ignore */ }
+  }
+  return "indigo";
+}
+
+// Collect extra dependencies from template module
+function getTemplateDeps(tmpl) {
+  const modulePath = path.join(TOOL_ROOT, "scripts/templates", `${tmpl}.js`);
+  if (fs.existsSync(modulePath)) {
+    const src = fs.readFileSync(modulePath, "utf8");
+    const match = src.match(/EXTRA_DEPS\s*=\s*(\{[^}]+\})/s);
+    if (match) {
+      try { return JSON.parse(match[1]); } catch { /* ignore */ }
+    }
+  }
+  return {};
+}
+
+const TEMPLATES = discoverTemplates();
+
+if (TEMPLATES.length === 0) {
+  console.error("\n  Error: no templates found in templates/presets/.");
+  console.error("  Extract a template first: node scripts/extract.js --source <path> --name <name>\n");
+  process.exit(1);
+}
+
+console.log(`\n  Found ${TEMPLATES.length} template(s): ${TEMPLATES.join(", ")}\n`);
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -41,12 +113,12 @@ function writeFile(rel, content) {
 }
 
 function readTemplate(tmpl, rel) {
-  return fs.readFileSync(path.join(TOOL_ROOT, "templates/presets", tmpl, rel), "utf8");
+  return fs.readFileSync(path.join(PRESETS_DIR, tmpl, rel), "utf8");
 }
 
 // ── Clean & init ─────────────────────────────────────────────────────────────
 
-console.log("\n╔══════════════════════════════════════════╗");
+console.log("╔══════════════════════════════════════════╗");
 console.log("║     launchkit — Build Showcase Site      ║");
 console.log("╚══════════════════════════════════════════╝\n");
 
@@ -80,7 +152,12 @@ for (const f of baseFiles) {
   console.log(`  [copy] ${f}`);
 }
 
-// ── package.json ─────────────────────────────────────────────────────────────
+// ── package.json (merge extra deps from all templates) ──────────────────────
+
+const allExtraDeps = {};
+for (const tmpl of TEMPLATES) {
+  Object.assign(allExtraDeps, getTemplateDeps(tmpl));
+}
 
 writeFile("package.json", JSON.stringify({
   name: "launchkit-showcase",
@@ -97,6 +174,7 @@ writeFile("package.json", JSON.stringify({
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    ...allExtraDeps,
   },
   devDependencies: {
     "@tailwindcss/postcss": "^4",
@@ -124,7 +202,11 @@ export type Locale = (typeof i18n)["locales"][number];
 
 writeFile("proxy.ts", readTemplate("base", "proxy.ts"));
 
-// ── get-dictionary.ts (template-aware) ───────────────────────────────────────
+// ── get-dictionary.ts (auto-generated from discovered templates) ─────────────
+
+const templateDictEntries = TEMPLATES.map((t) =>
+  `  "${t}": {\n    en: () => import("./dictionaries/${t}/en.json").then((m) => m.default),\n  },`
+).join("\n");
 
 writeFile("get-dictionary.ts", `import type { Locale } from "./i18n-config";
 
@@ -134,12 +216,7 @@ const homeDicts: Record<string, () => Promise<any>> = {
 };
 
 const templateDicts: Record<string, Record<string, () => Promise<any>>> = {
-  business: {
-    en: () => import("./dictionaries/business/en.json").then((m) => m.default),
-  },
-  restaurant: {
-    en: () => import("./dictionaries/restaurant/en.json").then((m) => m.default),
-  },
+${templateDictEntries}
 };
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
@@ -217,38 +294,36 @@ writeFile("dictionaries/en.json", JSON.stringify({
   },
 }, null, 2) + "\n");
 
-// ── Homepage ─────────────────────────────────────────────────────────────────
+// ── Homepage (auto-generated cards from discovered templates) ────────────────
 
-const templateMeta = {
-  business: {
-    title: "Business Site",
-    description: "Local business template with hero, services, reviews, FAQ, and contact sections.",
-    color: "indigo",
-  },
-  restaurant: {
-    title: "Restaurant",
-    description: "Dining venue template with dark hero, tabbed menu, scrolling reviews, and map contact.",
-    color: "amber",
-  },
-};
+// Tailwind color cycle for cards
+const CARD_COLORS = ["indigo", "amber", "emerald", "violet", "rose", "cyan", "orange", "teal"];
 
-const cardBlocks = TEMPLATES.map((t) => {
-  const m = templateMeta[t];
+const cardBlocks = TEMPLATES.map((t, i) => {
+  const color = getTemplateAccentColor(t);
+  const title = t.charAt(0).toUpperCase() + t.slice(1);
+  // Count components for description
+  const compDir = path.join(PRESETS_DIR, t, "app/[locale]/components");
+  const compCount = fs.existsSync(compDir)
+    ? fs.readdirSync(compDir).filter((f) => f.endsWith(".tsx")).length
+    : 0;
+  const desc = `Extracted template with ${compCount} components.`;
+
   return `        <a
           href={\`/\${locale}/${t}\`}
           className="group relative overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition-all hover:shadow-lg hover:-translate-y-1"
         >
-          <div className="aspect-[16/9] bg-linear-to-br from-${m.color}-50 to-${m.color}-100 flex items-center justify-center">
-            <span className="text-4xl font-bold text-${m.color}-600/30">${m.title}</span>
+          <div className="aspect-[16/9] bg-linear-to-br from-${color}-50 to-${color}-100 flex items-center justify-center">
+            <span className="text-4xl font-bold text-${color}-600/30">${title}</span>
           </div>
           <div className="p-6">
-            <h2 className="text-xl font-semibold text-zinc-900 group-hover:text-${m.color}-600 transition-colors">
-              ${m.title}
+            <h2 className="text-xl font-semibold text-zinc-900 group-hover:text-${color}-600 transition-colors">
+              ${title}
             </h2>
             <p className="mt-2 text-sm text-zinc-500 leading-relaxed">
-              ${m.description}
+              ${desc}
             </p>
-            <div className="mt-4 inline-flex items-center text-sm font-medium text-${m.color}-600">
+            <div className="mt-4 inline-flex items-center text-sm font-medium text-${color}-600">
               View template
               <svg className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -304,65 +379,68 @@ ${cardBlocks}
 for (const tmpl of TEMPLATES) {
   console.log(`\n─── Copying template: ${tmpl} ──────────────────────────────────────\n`);
 
-  const presetDir = path.join(TOOL_ROOT, "templates/presets", tmpl);
+  const presetDir = path.join(PRESETS_DIR, tmpl);
 
   // 1. Components — copy and fix import paths (one level deeper than original)
   const compSrc = path.join(presetDir, "app/[locale]/components");
   const compDest = path.join(SITE_DIR, `app/[locale]/${tmpl}/components`);
-  cpDir(compSrc, compDest);
-  // Fix relative imports in components: use @/ alias for root-level files
-  // Components originally at app/[locale]/components/ use ../../../i18n-config
-  // Now at app/[locale]/<template>/components/ — one level deeper, so use @/ alias
-  for (const file of fs.readdirSync(compDest)) {
-    if (!file.endsWith(".tsx") && !file.endsWith(".ts")) continue;
-    const filePath = path.join(compDest, file);
-    let content = fs.readFileSync(filePath, "utf8");
-    content = content.replace(
-      /from\s+["']\.\.\/(?:\.\.\/){2,}(i18n-config|get-dictionary)["']/g,
-      'from "@/$1"'
-    );
-    fs.writeFileSync(filePath, content, "utf8");
+  if (fs.existsSync(compSrc)) {
+    cpDir(compSrc, compDest);
+    // Fix relative imports in components: use @/ alias for root-level files
+    for (const file of fs.readdirSync(compDest)) {
+      if (!file.endsWith(".tsx") && !file.endsWith(".ts")) continue;
+      const filePath = path.join(compDest, file);
+      let content = fs.readFileSync(filePath, "utf8");
+      content = content.replace(
+        /from\s+["']\.\.\/(?:\.\.\/){2,}(i18n-config|get-dictionary)["']/g,
+        'from "@/$1"'
+      );
+      fs.writeFileSync(filePath, content, "utf8");
+    }
+    console.log(`  [copy] components/ (${fs.readdirSync(compSrc).length} files, imports fixed)`);
   }
-  console.log(`  [copy] components/ (${fs.readdirSync(compSrc).length} files, imports fixed)`);
 
   // 2. Page — use @/ alias for root imports, add template arg to getDictionary
-  let pageSrc = readTemplate(tmpl, "app/[locale]/page.tsx");
-  pageSrc = pageSrc.replace(
-    /from\s+["']\.\.\/(?:\.\.\/)*get-dictionary["']/,
-    'from "@/get-dictionary"'
-  );
-  pageSrc = pageSrc.replace(
-    /from\s+["']\.\.\/(?:\.\.\/)*i18n-config["']/,
-    'from "@/i18n-config"'
-  );
-  // Add template arg to getDictionary call
-  pageSrc = pageSrc.replace(
-    /getDictionary\(locale\)/,
-    `getDictionary(locale, "${tmpl}")`
-  );
-  writeFile(`app/[locale]/${tmpl}/page.tsx`, pageSrc);
+  const pagePath = path.join(presetDir, "app/[locale]/page.tsx");
+  if (fs.existsSync(pagePath)) {
+    let pageSrc = fs.readFileSync(pagePath, "utf8");
+    pageSrc = pageSrc.replace(
+      /from\s+["']\.\.\/(?:\.\.\/)*get-dictionary["']/,
+      'from "@/get-dictionary"'
+    );
+    pageSrc = pageSrc.replace(
+      /from\s+["']\.\.\/(?:\.\.\/)*i18n-config["']/,
+      'from "@/i18n-config"'
+    );
+    pageSrc = pageSrc.replace(
+      /getDictionary\(locale\)/,
+      `getDictionary(locale, "${tmpl}")`
+    );
+    writeFile(`app/[locale]/${tmpl}/page.tsx`, pageSrc);
+  }
 
   // 3. Layout — use @/ alias for root imports, add template arg to getDictionary
-  let layoutSrc = readTemplate(tmpl, "app/[locale]/layout.tsx");
-  layoutSrc = layoutSrc.replace(
-    /from\s+["']\.\.\/(?:\.\.\/)*get-dictionary["']/,
-    'from "@/get-dictionary"'
-  );
-  layoutSrc = layoutSrc.replace(
-    /from\s+["']\.\.\/(?:\.\.\/)*i18n-config["']/,
-    'from "@/i18n-config"'
-  );
-  // Add template arg to all getDictionary calls
-  layoutSrc = layoutSrc.replace(
-    /getDictionary\(locale\)/g,
-    `getDictionary(locale, "${tmpl}")`
-  );
-  writeFile(`app/[locale]/${tmpl}/layout.tsx`, layoutSrc);
+  const layoutPath = path.join(presetDir, "app/[locale]/layout.tsx");
+  if (fs.existsSync(layoutPath)) {
+    let layoutSrc = fs.readFileSync(layoutPath, "utf8");
+    layoutSrc = layoutSrc.replace(
+      /from\s+["']\.\.\/(?:\.\.\/)*get-dictionary["']/,
+      'from "@/get-dictionary"'
+    );
+    layoutSrc = layoutSrc.replace(
+      /from\s+["']\.\.\/(?:\.\.\/)*i18n-config["']/,
+      'from "@/i18n-config"'
+    );
+    layoutSrc = layoutSrc.replace(
+      /getDictionary\(locale\)/g,
+      `getDictionary(locale, "${tmpl}")`
+    );
+    writeFile(`app/[locale]/${tmpl}/layout.tsx`, layoutSrc);
+  }
 
-  // 4. Dictionaries
+  // 4. Dictionaries (en.json only for showcase)
   const dictSrc = path.join(presetDir, "dictionaries");
   if (fs.existsSync(dictSrc)) {
-    // Only copy en.json for showcase
     const enSrc = path.join(dictSrc, "en.json");
     if (fs.existsSync(enSrc)) {
       cpFile(enSrc, path.join(SITE_DIR, `dictionaries/${tmpl}/en.json`));
@@ -390,27 +468,29 @@ for (const tmpl of TEMPLATES) {
 // Templates reference /hero.jpg, /about.jpg, /gallery/*, /menu/* etc.
 // We renamed them to <template>-hero.jpg, <template>-gallery/*, etc.
 for (const tmpl of TEMPLATES) {
-  const presetDir = path.join(TOOL_ROOT, "templates/presets", tmpl);
+  const presetDir = path.join(PRESETS_DIR, tmpl);
   const pubSrc = path.join(presetDir, "public");
   if (!fs.existsSync(pubSrc)) continue;
 
-  // Collect all public entries (files and directories) that need path rewriting
   const pubEntries = fs.readdirSync(pubSrc, { withFileTypes: true });
 
   // Files to rewrite: all .tsx in components/, plus page.tsx and layout.tsx
   const filesToFix = [];
   const compDir = path.join(SITE_DIR, `app/[locale]/${tmpl}/components`);
-  for (const file of fs.readdirSync(compDir)) {
-    if (file.endsWith(".tsx")) filesToFix.push(path.join(compDir, file));
+  if (fs.existsSync(compDir)) {
+    for (const file of fs.readdirSync(compDir)) {
+      if (file.endsWith(".tsx")) filesToFix.push(path.join(compDir, file));
+    }
   }
-  filesToFix.push(path.join(SITE_DIR, `app/[locale]/${tmpl}/page.tsx`));
-  filesToFix.push(path.join(SITE_DIR, `app/[locale]/${tmpl}/layout.tsx`));
+  const pageFile = path.join(SITE_DIR, `app/[locale]/${tmpl}/page.tsx`);
+  const layoutFile = path.join(SITE_DIR, `app/[locale]/${tmpl}/layout.tsx`);
+  if (fs.existsSync(pageFile)) filesToFix.push(pageFile);
+  if (fs.existsSync(layoutFile)) filesToFix.push(layoutFile);
 
   for (const filePath of filesToFix) {
     let content = fs.readFileSync(filePath, "utf8");
     let changed = false;
     for (const entry of pubEntries) {
-      // Replace "/hero.jpg" → "/restaurant-hero.jpg", "/gallery/" → "/restaurant-gallery/"
       const pattern = entry.isDirectory()
         ? new RegExp(`(["'])\\/` + entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + `\\/`, "g")
         : new RegExp(`(["'])\\/` + entry.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + `(["'])`, "g");
@@ -426,7 +506,7 @@ for (const tmpl of TEMPLATES) {
     }
   }
 
-  // Also fix dictionary references to public assets (e.g. menu item images)
+  // Also fix dictionary references to public assets
   const dictDir = path.join(SITE_DIR, `dictionaries/${tmpl}`);
   if (fs.existsSync(dictDir)) {
     for (const dictFile of fs.readdirSync(dictDir)) {
@@ -457,6 +537,8 @@ execSync("npm install", { stdio: "inherit", cwd: SITE_DIR });
 console.log("\n╔══════════════════════════════════════════════════════════════╗");
 console.log("║  Showcase site built!                                        ║");
 console.log("╠══════════════════════════════════════════════════════════════╣");
+console.log(`║  Templates: ${TEMPLATES.join(", ").padEnd(47)}║`);
+console.log("║                                                              ║");
 console.log("║  Next steps:                                                 ║");
 console.log("║  1. cd site                                                  ║");
 console.log("║  2. npm run dev                                              ║");
