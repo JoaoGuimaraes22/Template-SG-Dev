@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // launchkit — Shared script helpers
-// Used by setup.js, config.js, sections.js, reset.js, validate.js, status.js
+// Used by setup.js, config.js, extract.js, reset.js, validate.js, status.js
 
 const fs = require("fs");
 const path = require("path");
@@ -202,44 +202,6 @@ function removeDependency(depName) {
   }
 }
 
-// ── navbar.links[] helpers (dict-based nav patching) ─────────────────────────
-
-// Inserts a nav link into navbar.links[] in a dict JSON file, after the entry with afterId.
-// If afterId is null, prepends to the array.
-function addNavLink(dictRelPath, link, afterId) {
-  const full = path.join(_target, dictRelPath);
-  if (!fs.existsSync(full)) return;
-  const dict = safeJsonParse(fs.readFileSync(full, "utf8"), dictRelPath);
-  if (!dict.navbar || !Array.isArray(dict.navbar.links)) return;
-  if (dict.navbar.links.some((l) => l.id === link.id)) return; // already present
-  if (afterId === null) {
-    dict.navbar.links.unshift(link);
-  } else {
-    const idx = dict.navbar.links.findIndex((l) => l.id === afterId);
-    if (idx !== -1) {
-      dict.navbar.links.splice(idx + 1, 0, link);
-    } else {
-      dict.navbar.links.push(link);
-    }
-  }
-  fs.writeFileSync(full, JSON.stringify(dict, null, 2) + "\n", "utf8");
-  console.log("  [patched]", dictRelPath, `— added nav link: ${link.id}`);
-}
-
-// Removes a nav link by id from navbar.links[] in a dict JSON file.
-function removeNavLink(dictRelPath, sectionId) {
-  const full = path.join(_target, dictRelPath);
-  if (!fs.existsSync(full)) return;
-  const dict = safeJsonParse(fs.readFileSync(full, "utf8"), dictRelPath);
-  if (!dict.navbar || !Array.isArray(dict.navbar.links)) return;
-  const before = dict.navbar.links.length;
-  dict.navbar.links = dict.navbar.links.filter((l) => l.id !== sectionId);
-  if (dict.navbar.links.length !== before) {
-    fs.writeFileSync(full, JSON.stringify(dict, null, 2) + "\n", "utf8");
-    console.log("  [patched]", dictRelPath, `— removed nav link: ${sectionId}`);
-  }
-}
-
 // ── readline helpers ──────────────────────────────────────────────────────────
 
 // Prompts a y/n question. Returns true for "y".
@@ -298,11 +260,8 @@ function readLaunchkit() {
     console.error("  The file may be corrupted. Run reset + setup to regenerate.\n");
     process.exit(1);
   }
-  // Ensure features, sections, and components exist (backward compat)
+  // Ensure features exists (backward compat)
   if (!state.features) state.features = {};
-  if (!state.sections) state.sections = {};
-  if (!state.components) state.components = {};
-  if (!state.features.palette) state.features.palette = "default";
   // Backward compat: migrate old i18n boolean to languages key
   if (state.features.languages === undefined) {
     state.features.languages = state.features.i18n === false ? "en" : "en+pt";
@@ -362,7 +321,6 @@ function checkHelp(usage) {
 // file that exports the required interface (type, setup).
 // Caches after first call. Replaces the hardcoded TEMPLATES maps in setup/toggle/status.
 let _templateCache = null;
-let _presetCache = null;
 
 function loadTemplates() {
   if (_templateCache) return _templateCache;
@@ -382,49 +340,6 @@ function loadTemplates() {
     _templateCache[key] = mod;
   }
   return _templateCache;
-}
-
-function loadPresets() {
-  if (_presetCache) return _presetCache;
-  const presetsDir = path.join(__dirname, "presets");
-  if (!fs.existsSync(presetsDir)) { _presetCache = []; return _presetCache; }
-  const entries = fs.readdirSync(presetsDir).filter((f) => f.endsWith(".js"));
-  _presetCache = [];
-  for (const file of entries) {
-    const mod = require(path.join(presetsDir, file));
-    const missing = ["name", "base", "sections"].filter((k) => mod[k] === undefined);
-    if (missing.length > 0) {
-      console.warn(`  [warn] presets/${file} missing fields: ${missing.join(", ")} — skipped`);
-      continue;
-    }
-    _presetCache.push(mod);
-  }
-  return _presetCache;
-}
-
-// ── Palette discovery ─────────────────────────────────────────────────────────
-
-let _paletteCache = null;
-
-// Scans configs/palettes/[name]/meta.json and returns an array of palette objects.
-function loadPalettes() {
-  if (_paletteCache) return _paletteCache;
-  const root = path.join(TOOL_ROOT, "configs", "palettes");
-  if (!fs.existsSync(root)) return (_paletteCache = []);
-  const palettes = [];
-  for (const name of fs.readdirSync(root)) {
-    const dir = path.join(root, name);
-    if (!fs.statSync(dir).isDirectory()) continue;
-    const metaPath = path.join(dir, "meta.json");
-    if (!fs.existsSync(metaPath)) continue;
-    const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
-    if (!meta.name) {
-      console.warn(`  [warn] configs/palettes/${name}/meta.json missing "name" field — skipped`);
-      continue;
-    }
-    palettes.push(meta);
-  }
-  return (_paletteCache = palettes);
 }
 
 // ── Setup config discovery ────────────────────────────────────────────────────
@@ -451,55 +366,6 @@ function loadSetupConfigs() {
   return (_setupConfigCache = configs);
 }
 
-// ── Component discovery ───────────────────────────────────────────────────────
-
-let _componentCache = null;
-
-// Scans templates/components/[name]/[variant]/ and returns an array of
-// { name, variants: [{ name, dir, meta }] }.
-function discoverComponents() {
-  if (_componentCache) return _componentCache;
-  const root = path.join(TOOL_ROOT, "templates", "components");
-  if (!fs.existsSync(root)) return (_componentCache = []);
-  const components = [];
-  for (const name of fs.readdirSync(root)) {
-    const dir = path.join(root, name);
-    if (!fs.statSync(dir).isDirectory()) continue;
-    const variants = [];
-    for (const variantName of fs.readdirSync(dir)) {
-      const variantDir = path.join(dir, variantName);
-      if (!fs.statSync(variantDir).isDirectory()) continue;
-      const metaPath = path.join(variantDir, "meta.json");
-      if (!fs.existsSync(metaPath)) continue;
-      variants.push({ name: variantName, dir: variantDir,
-        meta: JSON.parse(fs.readFileSync(metaPath, "utf8")) });
-    }
-    if (variants.length > 0) components.push({ name, variants });
-  }
-  return (_componentCache = components);
-}
-
-// Checks which components from the library are present in compDir/ui/.
-// Uses .launchkit.components to resolve the recorded variant.
-function detectInstalledComponents(compDir, launchkitComponents) {
-  const components = discoverComponents();
-  const installed = {};
-  for (const comp of components) {
-    const anyMeta = comp.variants[0].meta;
-    if (!anyMeta.componentName) continue;
-    const detected = fs.existsSync(
-      path.join(_target, compDir, "ui", `${anyMeta.componentName}.tsx`)
-    );
-    if (!detected) continue;
-    const recorded = launchkitComponents && launchkitComponents[comp.name];
-    const variant = recorded
-      ? comp.variants.find((v) => v.name === recorded.variant) || comp.variants[0]
-      : comp.variants[0];
-    installed[comp.name] = { variant: variant.name, meta: variant.meta, variantDir: variant.dir };
-  }
-  return installed;
-}
-
 // ── --project flag parser ─────────────────────────────────────────────────────
 
 // Call from scripts that operate on an existing project.
@@ -512,138 +378,6 @@ function parseProjectFlag() {
   return process.cwd();
 }
 
-// ── Section discovery ─────────────────────────────────────────────────────────
-
-// Structural components excluded from page section parsing.
-// These are layout-level elements, not toggleable content sections.
-const STRUCTURAL_COMPONENTS = [
-  "HeroFull", "Hero", "ProfileSidebar", "Footer", "FloatingCTA",
-];
-
-let _sectionCache = null;
-
-// Scans templates/sections/ for section definitions.
-// Returns [{ name, variants: [{ name, dir, meta, hooks? }] }].
-function discoverSections() {
-  if (_sectionCache) return _sectionCache;
-  const sectionsRoot = path.join(TOOL_ROOT, "templates", "sections");
-  if (!fs.existsSync(sectionsRoot)) return (_sectionCache = []);
-  const sections = [];
-  for (const sectionName of fs.readdirSync(sectionsRoot)) {
-    const sectionDir = path.join(sectionsRoot, sectionName);
-    if (!fs.statSync(sectionDir).isDirectory()) continue;
-    const variants = [];
-    for (const variantName of fs.readdirSync(sectionDir)) {
-      const variantDir = path.join(sectionDir, variantName);
-      if (!fs.statSync(variantDir).isDirectory()) continue;
-      const metaPath = path.join(variantDir, "meta.json");
-      if (!fs.existsSync(metaPath)) continue;
-      const meta = JSON.parse(fs.readFileSync(metaPath, "utf8"));
-      // Lint dict files: warn if dictKey is used as root key (causes double-nesting on install)
-      if (meta.dictKey) {
-        for (const locale of ["en", "pt"]) {
-          const dictPath = path.join(variantDir, `${locale}.json`);
-          if (!fs.existsSync(dictPath)) continue;
-          try {
-            const dict = JSON.parse(fs.readFileSync(dictPath, "utf8"));
-            if (Object.keys(dict).length === 1 && dict[meta.dictKey] !== undefined) {
-              console.warn(
-                `  [warn] ${sectionName}/${variantName}/${locale}.json wraps content in "${meta.dictKey}" key` +
-                ` — sections.js will double-nest it. Remove the outer wrapper.`
-              );
-            }
-          } catch { /* malformed JSON — ignore here, will fail on install */ }
-        }
-      }
-      const variant = { name: variantName, dir: variantDir, meta };
-      const hooksPath = path.join(variantDir, "hooks.js");
-      if (fs.existsSync(hooksPath)) variant.hooks = require(hooksPath);
-      variants.push(variant);
-    }
-    if (variants.length > 0) {
-      sections.push({ name: sectionName, variants });
-    }
-  }
-  return (_sectionCache = sections);
-}
-
-// Parses page.tsx for <ComponentName lines. Returns [{ name, line, indent }].
-// Excludes structural components (Hero, Footer, etc.) unless includeStructural is true.
-function parseSectionsFromPage(pageFile, { includeStructural = false } = {}) {
-  const full = path.join(_target, pageFile);
-  if (!fs.existsSync(full)) return [];
-  const lines = fs.readFileSync(full, "utf8").split("\n");
-  const results = [];
-  const re = /^(\s*)<([A-Z][A-Za-z0-9]*)\s/;
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(re);
-    if (!m) continue;
-    const name = m[2];
-    if (!includeStructural && STRUCTURAL_COMPONENTS.includes(name)) continue;
-    results.push({ name, line: i + 1, indent: m[1].length });
-  }
-  return results;
-}
-
-// Cross-references discoverSections() with component files in compDir.
-// Returns { [sectionName]: { variant, meta, variantDir } } for installed sections.
-// If launchkitSections is provided, uses its recorded variant name to disambiguate
-// when multiple variants share the same componentName.
-// If templateType is provided, prefers variants compatible with the template when
-// no .launchkit record exists.
-// Detection: uses meta.detectFile if set, otherwise checks {compDir}/{componentName}.tsx.
-// Sections with neither detectFile nor componentName cannot be auto-detected.
-function detectInstalledSections(compDir, launchkitSections, templateType) {
-  const sections = discoverSections();
-  const installed = {};
-  for (const section of sections) {
-    // Skip sections not compatible with this template type
-    if (templateType) {
-      const compatible = section.variants.some((v) => v.meta.templates.includes(templateType));
-      if (!compatible) continue;
-    }
-
-    const anyMeta = section.variants[0].meta;
-
-    // Determine if the section is installed
-    let detected = false;
-    if (anyMeta.detectFile) {
-      const filePath = anyMeta.detectFile.replace("{compDir}", compDir);
-      detected = fs.existsSync(path.join(_target, filePath));
-    } else if (anyMeta.componentName) {
-      detected = fs.existsSync(path.join(_target, compDir, `${anyMeta.componentName}.tsx`));
-    }
-    // Fallback: check hooks.detect on compatible variants
-    if (!detected) {
-      for (const v of section.variants) {
-        if (v.hooks && v.hooks.detect) {
-          detected = v.hooks.detect({ compDir, projectDir: _target });
-          if (detected) break;
-        }
-      }
-    }
-    if (!detected) continue;
-
-    // Prefer the variant recorded in .launchkit if available
-    const recorded = launchkitSections && launchkitSections[section.name];
-    let variant;
-    if (recorded) {
-      variant = section.variants.find((v) => v.name === recorded.variant) || section.variants[0];
-    } else if (templateType) {
-      variant = section.variants.find((v) => v.meta.templates.includes(templateType)) || section.variants[0];
-    } else {
-      variant = section.variants[0];
-    }
-
-    installed[section.name] = {
-      variant: variant.name,
-      meta: variant.meta,
-      variantDir: variant.dir,
-    };
-  }
-  return installed;
-}
-
 module.exports = {
   TOOL_ROOT,
   LAUNCHKIT_VERSION,
@@ -651,7 +385,6 @@ module.exports = {
   DEFAULT_LOCALE,
   DICT_FILES,
   LOCALES_TS_LITERAL,
-  STRUCTURAL_COMPONENTS,
   setTarget,
   target,
   deleteIfExists,
@@ -676,15 +409,6 @@ module.exports = {
   copyBaseScaffold,
   parseProjectFlag,
   checkHelp,
-  addNavLink,
-  removeNavLink,
   loadTemplates,
-  loadPresets,
   loadSetupConfigs,
-  loadPalettes,
-  discoverComponents,
-  detectInstalledComponents,
-  discoverSections,
-  parseSectionsFromPage,
-  detectInstalledSections,
 };

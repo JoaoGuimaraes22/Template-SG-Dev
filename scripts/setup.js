@@ -7,35 +7,31 @@
 const readline = require("readline");
 const fs = require("fs");
 const path = require("path");
-const { execSync, spawnSync } = require("child_process");
-const { TOOL_ROOT, setTarget, target, ask, askChoice, writeLaunchkit, copyBaseScaffold, checkHelp, loadTemplates, loadPresets, loadSetupConfigs } = require("./lib");
+const { execSync } = require("child_process");
+const { TOOL_ROOT, setTarget, target, ask, askChoice, writeLaunchkit, copyBaseScaffold, checkHelp, loadTemplates, loadSetupConfigs } = require("./lib");
 
 checkHelp(`
 launchkit — Setup
 
-  Creates a new project from a template, then optionally applies a preset
-  (an ordered bundle of sections — contact form, chatbot, sidebar, etc.).
+  Creates a new project from an extracted template.
+  Templates are auto-discovered from scripts/templates/ (created via extract.js).
 
 Usage:
-  node scripts/setup.js --name <name> --output <dir> [--<template>] [--preset <name|none>]
+  node scripts/setup.js --name <name> --output <dir> [--<template>]
                         [--answers '{"languages":"en+pt","accentColor":"amber"}']
 
 Options:
   --name <name>       Project folder name (required)
   --output <dir>      Parent directory for the project (required)
   --<template>        Use a specific template (skip type prompt)
-                      Templates are auto-discovered from scripts/templates/
-  --preset <name>     Apply a named preset non-interactively (use "none" to skip)
   --answers <json>    JSON object with pre-filled answers to skip interactive prompts
                       Keys: languages ("en"|"pt"|"en+pt"), accentColor (color token)
   -h, --help          Show this help message
 
 Examples:
   node scripts/setup.js --name my-site --output ../
-  node scripts/setup.js --name my-site --output ../ --portfolio
-  node scripts/setup.js --name my-site --output ../ --portfolio --preset portfolio
-  node scripts/setup.js --name my-site --output ../ --business --preset none
-  node scripts/setup.js --name my-site --output ../ --business --preset restaurant \\
+  node scripts/setup.js --name my-site --output ../ --restaurant
+  node scripts/setup.js --name my-site --output ../ --restaurant \\
     --answers '{"languages":"en+pt","accentColor":"amber"}'
 `);
 
@@ -65,14 +61,8 @@ function parseAnswers() {
 
 // ── .env.example generation ───────────────────────────────────────────────────
 
-function generateEnvExample(type, sections) {
-  let env = `# ── Required ──────────────────────────────────────────────────────────────\nNEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN\n\n`;
-  if (sections["contact-form"]) {
-    env += `# ── Contact Form (Resend) ─────────────────────────────────────────────────\n# Sign up at https://resend.com — get your API key from the dashboard\nRESEND_API_KEY=re_...\n\n`;
-  }
-  if (type === "portfolio" && sections["chatbot"]) {
-    env += `# ── Chatbot (Dialogflow ES) ───────────────────────────────────────────────\n# Create a Google Cloud service account with "Dialogflow API Client" role\n# Download the JSON key, stringify it, and paste as a single line below\nGOOGLE_CREDENTIALS={"type":"service_account","project_id":"..."}\nDIALOGFLOW_PROJECT_ID=your-dialogflow-project-id\n\n`;
-  }
+function generateEnvExample() {
+  const env = `# ── Required ──────────────────────────────────────────────────────────────\nNEXT_PUBLIC_SITE_URL=https://YOUR_DOMAIN\n`;
   fs.writeFileSync(path.join(target(), ".env.example"), env, "utf8");
   console.log("  [created] .env.example");
 }
@@ -178,14 +168,12 @@ async function main() {
     console.log(`▸  Type: ${typeArg.charAt(0).toUpperCase() + typeArg.slice(1)} (from argument)\n`);
     templateKey = typeArg;
   } else {
-    const descriptions = {
-      portfolio:  "Portfolio     — personal showcase (WebGL hero, sidebar, chatbot, project gallery)",
-      business:   "Business Site — local business (services, reviews, FAQ, contact, footer)",
-      restaurant: "Restaurant    — dining venue (dark hero, menu, scrolling reviews, map contact)",
-      blank:      "Blank         — minimal scaffold, no components (clean starting point)",
-    };
-    const choices = templateKeys.map((k) => descriptions[k] || k.charAt(0).toUpperCase() + k.slice(1));
-    const choice = await askChoice(rl, "[0] Project type?", choices);
+    const choices = templateKeys.map((k) => {
+      const mod = TEMPLATES[k];
+      const desc = mod.description || k.charAt(0).toUpperCase() + k.slice(1);
+      return desc;
+    });
+    const choice = await askChoice(rl, "[0] Template?", choices);
     templateKey = templateKeys[(choice ?? 1) - 1];
   }
 
@@ -233,62 +221,10 @@ async function main() {
   // ── Build features + write .launchkit ─────────────────────────────────────
   const features = { ...configAnswers, ...(result.features || {}) };
 
-  // Write initial .launchkit now so preset sections.js child processes can read/update it
-  writeLaunchkit({ name: projectName, type: result.type, features, sections: {} });
+  writeLaunchkit({ name: projectName, type: result.type, sourceTemplate: result.type, features });
   console.log("  [created] .launchkit");
 
-  // ── Preset selection ───────────────────────────────────────────────────────
-  const matchingPresets = loadPresets().filter((p) => p.base === result.type);
-  let chosenPreset = null;
-
-  if (matchingPresets.length > 0) {
-    const presetArg = parseFlag("--preset");
-    if (presetArg) {
-      if (presetArg !== "none") {
-        chosenPreset = matchingPresets.find((p) => p.name === presetArg) || null;
-        if (!chosenPreset) console.warn(`  [warn] preset "${presetArg}" not found — skipping`);
-      }
-    } else {
-      console.log("\n─── Preset sections ────────────────────────────────────────────\n");
-      const labels = [
-        ...matchingPresets.map((p) => `${p.name} — ${p.description}`),
-        "None (bare template, add sections later)",
-      ];
-      const choice = await askChoice(rl, "[?] Apply a preset?", labels);
-      const idx = (choice ?? labels.length) - 1;
-      chosenPreset = idx < matchingPresets.length ? matchingPresets[idx] : null;
-    }
-  }
-
   rl.close();
-
-  // ── Apply preset sections (each runs sections.js with --no-install) ────────
-  if (chosenPreset) {
-    console.log(`\n─── Applying preset: ${chosenPreset.name} ─────────────────────────────\n`);
-    for (const s of chosenPreset.sections) {
-      const res = spawnSync(
-        process.execPath,
-        [
-          path.join(TOOL_ROOT, "scripts/sections.js"),
-          "--project", absOutput,
-          "--add", s.name,
-          "--variant", s.variant,
-          "--yes",
-          "--no-install",
-        ],
-        { stdio: "inherit" }
-      );
-      if (res.status !== 0) {
-        console.error(`\n  [warn] Failed to add section "${s.name}" — continuing.\n`);
-      }
-    }
-  }
-
-  // ── Run preset afterSections hook (for installs that bypass sections.js) ──
-  if (chosenPreset && chosenPreset.afterSections) {
-    const presetState = JSON.parse(fs.readFileSync(path.join(absOutput, ".launchkit"), "utf8"));
-    await chosenPreset.afterSections({ projectDir: absOutput, lib: require("./lib"), state: presetState });
-  }
 
   // ── npm install (single pass after all sections are applied) ──────────────
   console.log("\n─── Running npm install ─────────────────────────────────────────\n");
@@ -300,15 +236,12 @@ async function main() {
     process.exit(1);
   }
 
-  // ── Read final .launchkit (sections updated by child processes) ────────────
-  const finalState = JSON.parse(fs.readFileSync(path.join(absOutput, ".launchkit"), "utf8"));
-
   console.log("\n─── Generating .env.example ────────────────────────────────────\n");
-  generateEnvExample(result.type, finalState.sections || {});
+  generateEnvExample(result.type);
 
   const relOutput = path.relative(process.cwd(), absOutput);
-  const bootstrapFile = path.join(TOOL_ROOT, `templates/presets/${result.type}/BOOTSTRAP.md`);
-  const relBootstrap = path.relative(process.cwd(), bootstrapFile);
+  const bootstrapPath = path.join(absOutput, "BOOTSTRAP.md");
+  const hasBootstrap = fs.existsSync(bootstrapPath);
 
   console.log("\n╔══════════════════════════════════════════════════════════════╗");
   console.log("║  Setup complete!                                             ║");
@@ -316,14 +249,15 @@ async function main() {
   console.log("║  Next steps:                                                 ║");
   console.log(`║  1. cd ${relOutput.padEnd(53)}║`);
   console.log("║  2. Copy .env.example → .env.local and fill in values        ║");
-  console.log(`║  3. Paste ${relBootstrap.padEnd(49)}║`);
-  console.log("║     into a new Claude Code conversation                      ║");
+  if (hasBootstrap) {
+  console.log("║  3. Read BOOTSTRAP.md for personalization guide               ║");
+  }
   console.log("║  4. Replace placeholder images in public/                    ║");
   console.log("║  5. npm run dev  →  preview your site                        ║");
   console.log("╚══════════════════════════════════════════════════════════════╝\n");
-  console.log(`  To manage sections:    node scripts/sections.js --project ${relOutput}`);
-  console.log(`  To manage components:  node scripts/components.js --project ${relOutput}`);
-  console.log(`  To change config:      node scripts/config.js --project ${relOutput}\n`);
+  console.log(`  To personalize:   node scripts/personalize.js --project ${relOutput}`);
+  console.log(`  To validate:      node scripts/validate.js --project ${relOutput}`);
+  console.log(`  To change config: node scripts/config.js --project ${relOutput}\n`);
 }
 
 main().catch((err) => {

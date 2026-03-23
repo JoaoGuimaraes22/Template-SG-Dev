@@ -6,7 +6,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { TOOL_ROOT, target, setTarget, parseProjectFlag, checkHelp } = require("./lib");
+const { TOOL_ROOT, target, setTarget, parseProjectFlag, checkHelp, readLaunchkit } = require("./lib");
 
 checkHelp(`
 launchkit — Validate
@@ -38,18 +38,10 @@ const SKIP = new Set([".next", "node_modules", ".git", "scripts"]);
 
 // ── Feature detection ────────────────────────────────────────────────────────
 
+const state = readLaunchkit();
+const templateType = state.type || "unknown";
+const templateName = templateType.charAt(0).toUpperCase() + templateType.slice(1);
 const i18nActive = fs.existsSync(path.join(ROOT, "i18n-config.ts"));
-const localeSeg = i18nActive ? "[locale]" : "";
-const componentsDir = ["app", localeSeg, "components"].filter(Boolean).join("/");
-
-function componentExists(name) {
-  return fs.existsSync(path.join(ROOT, componentsDir, name));
-}
-
-const isPortfolio = componentExists("ProfileSidebar.tsx");
-const isBusiness  = componentExists("Footer.tsx");
-const templateType = isPortfolio ? "portfolio" : "business";
-const templateName = isPortfolio ? "portfolio" : isBusiness ? "business site" : "unknown";
 
 // ── File walker ──────────────────────────────────────────────────────────────
 
@@ -113,31 +105,22 @@ for (const scanDir of SCAN_DIRS) {
 // ── Scan: placeholder images ─────────────────────────────────────────────────
 
 // Returns true if the file exists and matches the shipped template size (never replaced).
-function isDefaultImage(relPath, templateRelPath) {
+function isDefaultImage(relPath) {
+  const tmplPath = path.join(TOOL_ROOT, `templates/presets/${templateType}/${relPath}`);
   const full = path.join(ROOT, relPath);
-  const tmpl = path.join(TOOL_ROOT, templateRelPath);
-  if (!fs.existsSync(full) || !fs.existsSync(tmpl)) return false;
-  return fs.statSync(full).size === fs.statSync(tmpl).size;
+  if (!fs.existsSync(full) || !fs.existsSync(tmplPath)) return false;
+  return fs.statSync(full).size === fs.statSync(tmplPath).size;
 }
 
 const imageWarnings = []; // { rel, reason }
 
-const imagesToCheck = [
-  { rel: "public/hero.jpg",     tmpl: `templates/presets/${templateType}/public/hero.jpg` },
-  { rel: "public/og-image.png", tmpl: null }, // not shipped — just check existence
-];
-if (isPortfolio) {
-  imagesToCheck.push({ rel: "public/profile.jpg", tmpl: "templates/presets/portfolio/public/profile.jpg" });
-}
-if (isBusiness) {
-  imagesToCheck.push({ rel: "public/about.jpg", tmpl: null });
-}
-
-for (const { rel, tmpl } of imagesToCheck) {
+// Check key images: hero.jpg and og-image.png
+const imagesToCheck = ["public/hero.jpg", "public/og-image.png"];
+for (const rel of imagesToCheck) {
   const full = path.join(ROOT, rel);
   if (!fs.existsSync(full)) {
     imageWarnings.push({ rel, reason: "missing" });
-  } else if (tmpl && isDefaultImage(rel, tmpl)) {
+  } else if (isDefaultImage(rel)) {
     imageWarnings.push({ rel, reason: "still the shipped default — replace before deploying" });
   }
 }
@@ -148,7 +131,7 @@ for (const { rel, tmpl } of imagesToCheck) {
 // Skips paths already covered by the static imageWarnings check above.
 const refImageHits = []; // { source, imgPath }
 const IMAGE_REF_RE = /["'`](\/(?:[\w.\-]+\/)*[\w.\-]+\.(?:jpg|jpeg|png|webp|gif|svg))["'`]/g;
-const checkedPublicPaths = new Set(imagesToCheck.map((i) => i.rel));
+const checkedPublicPaths = new Set(imagesToCheck);
 const seenRefPaths = new Set();
 
 for (const dir of ["app", "dictionaries"]) {

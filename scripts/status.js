@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // launchkit — Status
-// Read-only: prints .launchkit type, project config, and installed sections.
+// Read-only: prints .launchkit type, project config, and component files.
 // Run: node scripts/status.js --project ../my-project
 
 const fs = require("fs");
 const path = require("path");
-const { target, setTarget, parseProjectFlag, readLaunchkit, checkHelp, discoverSections, detectInstalledSections } = require("./lib");
+const { target, setTarget, parseProjectFlag, readLaunchkit, checkHelp } = require("./lib");
 
 checkHelp(`
 launchkit — Status
 
-  Read-only display of template type, project config, and installed sections.
+  Read-only display of template type, project config, and components.
 
 Usage:
   node scripts/status.js [--project <path>]
@@ -37,44 +37,34 @@ console.log("╚═════════════════════�
 
 console.log(`  Template : ${type.charAt(0).toUpperCase() + type.slice(1)}`);
 console.log(`  Project  : ${target()}`);
-console.log(`  i18n     : ${i18nActive ? "enabled" : "disabled (collapsed)"}`);
+console.log(`  i18n     : ${i18nActive ? "enabled" : "disabled"}`);
 if (state.features?.accentColor) {
   console.log(`  Accent   : ${state.features.accentColor}`);
 }
-
-// ── Sections ─────────────────────────────────────────────────────────────────
-
-const allSections = discoverSections();
-const installed = detectInstalledSections(compDir, state.sections, type);
-
-const compatible = allSections.filter((s) =>
-  s.variants.some((v) => v.meta.templates.includes(type))
-);
-
-if (compatible.length > 0) {
-  console.log("\n  Sections:");
-  for (const section of compatible) {
-    const inst = installed[section.name];
-    const icon = inst ? "✓" : "✗";
-    const variant = inst ? ` (${inst.variant})` : "";
-    const variantNames = section.variants
-      .filter((v) => v.meta.templates.includes(type))
-      .map((v) => v.name)
-      .join(", ");
-    console.log(`  ${icon}  ${section.name}${variant}  [${variantNames}]`);
-  }
-
-  // Check for drift between .launchkit sections and actual files
-  const recordedNames = Object.keys(state.sections || {});
-  const installedNames = Object.keys(installed);
-  const drifted = recordedNames.filter((n) => !installedNames.includes(n))
-    .concat(installedNames.filter((n) => !recordedNames.includes(n)));
-  if (drifted.length > 0) {
-    console.log("\n  ⚠  .launchkit sections out of sync with actual files.");
-    console.log("     Use sections.js --status for detailed view.\n");
-  } else {
-    console.log();
-  }
-} else {
-  console.log("\n  No sections available for this template type.\n");
+if (state.features?.languages) {
+  console.log(`  Languages: ${state.features.languages}`);
 }
+if (state.features?.deployUrl) {
+  console.log(`  Deploy   : ${state.features.deployUrl}`);
+}
+if (state.sourceTemplate) {
+  console.log(`  Source   : ${state.sourceTemplate}`);
+}
+
+// ── Components ──────────────────────────────────────────────────────────────
+
+const absCompDir = path.join(target(), compDir);
+if (fs.existsSync(absCompDir)) {
+  const components = fs.readdirSync(absCompDir)
+    .filter((f) => f.endsWith(".tsx"))
+    .map((f) => f.replace(".tsx", ""));
+
+  if (components.length > 0) {
+    console.log(`\n  Components (${components.length}):`);
+    for (const comp of components) {
+      console.log(`    ${comp}`);
+    }
+  }
+}
+
+console.log();
