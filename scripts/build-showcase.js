@@ -190,9 +190,13 @@ writeFile("package.json", JSON.stringify({
 
 // ── i18n-config.ts (en only) ────────────────────────────────────────────────
 
+// Include all locales that any template might reference
+const { LOCALES } = require("./lib");
+const localesLiteral = LOCALES.map((l) => `"${l}"`).join(", ");
+
 writeFile("i18n-config.ts", `export const i18n = {
   defaultLocale: "en",
-  locales: ["en"],
+  locales: [${localesLiteral}],
 } as const;
 
 export type Locale = (typeof i18n)["locales"][number];
@@ -302,11 +306,15 @@ const CARD_COLORS = ["indigo", "amber", "emerald", "violet", "rose", "cyan", "or
 const cardBlocks = TEMPLATES.map((t, i) => {
   const color = getTemplateAccentColor(t);
   const title = t.charAt(0).toUpperCase() + t.slice(1);
-  // Count components for description
-  const compDir = path.join(PRESETS_DIR, t, "app/[locale]/components");
-  const compCount = fs.existsSync(compDir)
-    ? fs.readdirSync(compDir).filter((f) => f.endsWith(".tsx")).length
-    : 0;
+  // Count components for description (check both locations, handle subdirs)
+  let compDir = path.join(PRESETS_DIR, t, "app/[locale]/components");
+  if (!fs.existsSync(compDir)) compDir = path.join(PRESETS_DIR, t, "app/components");
+  let compCount = 0;
+  if (fs.existsSync(compDir)) {
+    const entries = fs.readdirSync(compDir, { withFileTypes: true });
+    const flatTsx = entries.filter((e) => !e.isDirectory() && e.name.endsWith(".tsx")).length;
+    compCount = flatTsx > 0 ? flatTsx : entries.filter((e) => e.isDirectory()).length;
+  }
   const desc = `Extracted template with ${compCount} components.`;
 
   return `        <a
@@ -381,37 +389,57 @@ for (const tmpl of TEMPLATES) {
 
   const presetDir = path.join(PRESETS_DIR, tmpl);
 
-  // 1. Components — copy and fix import paths (one level deeper than original)
-  const compSrc = path.join(presetDir, "app/[locale]/components");
-  const compDest = path.join(SITE_DIR, `app/[locale]/${tmpl}/components`);
+  // 1. Components — copy and fix import paths
+  // Check both app/[locale]/components/ and app/components/
+  let compSrc = path.join(presetDir, "app/[locale]/components");
+  let compIsOutsideLocale = false;
+  if (!fs.existsSync(compSrc)) {
+    compSrc = path.join(presetDir, "app/components");
+    compIsOutsideLocale = true;
+  }
+  // For showcase, components go into app/[locale]/<template>/components/ (or app/<template>/components/)
+  const compDest = compIsOutsideLocale
+    ? path.join(SITE_DIR, `app/${tmpl}/components`)
+    : path.join(SITE_DIR, `app/[locale]/${tmpl}/components`);
   if (fs.existsSync(compSrc)) {
     cpDir(compSrc, compDest);
-    // Fix relative imports in components: use @/ alias for root-level files
-    for (const file of fs.readdirSync(compDest)) {
-      if (!file.endsWith(".tsx") && !file.endsWith(".ts")) continue;
-      const filePath = path.join(compDest, file);
-      let content = fs.readFileSync(filePath, "utf8");
-      content = content.replace(
-        /from\s+["']\.\.\/(?:\.\.\/){2,}(i18n-config|get-dictionary)["']/g,
-        'from "@/$1"'
-      );
-      fs.writeFileSync(filePath, content, "utf8");
+    // Fix relative imports in all .tsx/.ts files (recursive for subdirectory components)
+    function fixImports(dir) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const filePath = path.join(dir, entry.name);
+        if (entry.isDirectory()) { fixImports(filePath); continue; }
+        if (!entry.name.endsWith(".tsx") && !entry.name.endsWith(".ts")) continue;
+        let content = fs.readFileSync(filePath, "utf8");
+        content = content.replace(
+          /from\s+["'](?:\.\.\/)+(i18n-config|get-dictionary)["']/g,
+          'from "@/$1"'
+        );
+        fs.writeFileSync(filePath, content, "utf8");
+      }
     }
-    console.log(`  [copy] components/ (${fs.readdirSync(compSrc).length} files, imports fixed)`);
+    fixImports(compDest);
+    console.log(`  [copy] components/ (imports fixed)`);
   }
 
-  // 2. Page — use @/ alias for root imports, add template arg to getDictionary
+  // 2. Page — use @/ alias for root imports, fix component paths, add template arg to getDictionary
   const pagePath = path.join(presetDir, "app/[locale]/page.tsx");
   if (fs.existsSync(pagePath)) {
     let pageSrc = fs.readFileSync(pagePath, "utf8");
     pageSrc = pageSrc.replace(
-      /from\s+["']\.\.\/(?:\.\.\/)*get-dictionary["']/,
+      /from\s+["'](?:\.\.\/)+get-dictionary["']/g,
       'from "@/get-dictionary"'
     );
     pageSrc = pageSrc.replace(
-      /from\s+["']\.\.\/(?:\.\.\/)*i18n-config["']/,
+      /from\s+["'](?:\.\.\/)+i18n-config["']/g,
       'from "@/i18n-config"'
     );
+    // Fix component imports for templates with app/components/ (outside locale)
+    if (compIsOutsideLocale) {
+      pageSrc = pageSrc.replace(
+        /from\s+["']\.\.\/components\//g,
+        `from "@/app/${tmpl}/components/`
+      );
+    }
     pageSrc = pageSrc.replace(
       /getDictionary\(locale\)/,
       `getDictionary(locale, "${tmpl}")`
@@ -419,18 +447,24 @@ for (const tmpl of TEMPLATES) {
     writeFile(`app/[locale]/${tmpl}/page.tsx`, pageSrc);
   }
 
-  // 3. Layout — use @/ alias for root imports, add template arg to getDictionary
+  // 3. Layout — use @/ alias for root imports, fix component paths, add template arg to getDictionary
   const layoutPath = path.join(presetDir, "app/[locale]/layout.tsx");
   if (fs.existsSync(layoutPath)) {
     let layoutSrc = fs.readFileSync(layoutPath, "utf8");
     layoutSrc = layoutSrc.replace(
-      /from\s+["']\.\.\/(?:\.\.\/)*get-dictionary["']/,
+      /from\s+["'](?:\.\.\/)+get-dictionary["']/g,
       'from "@/get-dictionary"'
     );
     layoutSrc = layoutSrc.replace(
-      /from\s+["']\.\.\/(?:\.\.\/)*i18n-config["']/,
+      /from\s+["'](?:\.\.\/)+i18n-config["']/g,
       'from "@/i18n-config"'
     );
+    if (compIsOutsideLocale) {
+      layoutSrc = layoutSrc.replace(
+        /from\s+["']\.\.\/components\//g,
+        `from "@/app/${tmpl}/components/`
+      );
+    }
     layoutSrc = layoutSrc.replace(
       /getDictionary\(locale\)/g,
       `getDictionary(locale, "${tmpl}")`
@@ -474,13 +508,19 @@ for (const tmpl of TEMPLATES) {
 
   const pubEntries = fs.readdirSync(pubSrc, { withFileTypes: true });
 
-  // Files to rewrite: all .tsx in components/, plus page.tsx and layout.tsx
+  // Files to rewrite: all .tsx in components/ (recursive), plus page.tsx and layout.tsx
   const filesToFix = [];
-  const compDir = path.join(SITE_DIR, `app/[locale]/${tmpl}/components`);
-  if (fs.existsSync(compDir)) {
-    for (const file of fs.readdirSync(compDir)) {
-      if (file.endsWith(".tsx")) filesToFix.push(path.join(compDir, file));
+  // Check both possible component locations
+  for (const candidateDir of [`app/[locale]/${tmpl}/components`, `app/${tmpl}/components`]) {
+    const absDir = path.join(SITE_DIR, candidateDir);
+    if (!fs.existsSync(absDir)) continue;
+    function collectTsx(dir) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.isDirectory()) collectTsx(path.join(dir, entry.name));
+        else if (entry.name.endsWith(".tsx")) filesToFix.push(path.join(dir, entry.name));
+      }
     }
+    collectTsx(absDir);
   }
   const pageFile = path.join(SITE_DIR, `app/[locale]/${tmpl}/page.tsx`);
   const layoutFile = path.join(SITE_DIR, `app/[locale]/${tmpl}/layout.tsx`);

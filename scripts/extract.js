@@ -214,13 +214,22 @@ function main() {
 
   console.log("\n─── Extracting template files ──────────────────────────────────\n");
 
-  // ── 1. Copy app/[locale]/ (components, page.tsx, layout.tsx) ────────────
+  // ── 1. Copy app/[locale]/ (page.tsx, layout.tsx, and components if inside) ─
   const srcAppLocale = path.join(absSource, appLocalePath);
   const destAppLocale = path.join(templateDir, appLocalePath);
   if (fs.existsSync(srcAppLocale)) {
     const stats = copyRecursive(srcAppLocale, destAppLocale);
     totalFiles += stats.files;
     console.log(`  [copied] ${appLocalePath}/ (${stats.files} files)`);
+  }
+
+  // ── 1b. Copy app/components/ if it exists outside [locale] ─────────────
+  const srcAppComponents = path.join(absSource, "app", "components");
+  const destAppComponents = path.join(templateDir, "app", "components");
+  if (fs.existsSync(srcAppComponents) && !fs.existsSync(path.join(srcAppLocale, "components"))) {
+    const stats = copyRecursive(srcAppComponents, destAppComponents);
+    totalFiles += stats.files;
+    console.log(`  [copied] app/components/ (${stats.files} files)`);
   }
 
   // ── 2. Copy app/api/ if present ─────────────────────────────────────────
@@ -316,10 +325,21 @@ function main() {
   }
 
   // ── 10. Detect components ─────────────────────────────────────────────
-  const compDirPath = path.join(templateDir, appLocalePath, "components");
-  const components = fs.existsSync(compDirPath)
-    ? fs.readdirSync(compDirPath).filter((f) => f.endsWith(".tsx")).map((f) => f.replace(".tsx", ""))
-    : [];
+  // Check both app/[locale]/components/ and app/components/ (subdirs or flat .tsx)
+  let compDirPath = path.join(templateDir, appLocalePath, "components");
+  if (!fs.existsSync(compDirPath)) {
+    compDirPath = path.join(templateDir, "app", "components");
+  }
+  let components = [];
+  if (fs.existsSync(compDirPath)) {
+    const entries = fs.readdirSync(compDirPath, { withFileTypes: true });
+    // Flat .tsx files (e.g. Hero.tsx)
+    components = entries.filter((e) => !e.isDirectory() && e.name.endsWith(".tsx")).map((e) => e.name.replace(".tsx", ""));
+    // Subdirectory components (e.g. Hero/Hero.tsx)
+    if (components.length === 0) {
+      components = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+    }
+  }
 
   // ── 11. Scan for extra dependencies ───────────────────────────────────
   const basePkg = JSON.parse(fs.readFileSync(path.join(BASE_DIR, "package.json"), "utf8"));
@@ -365,10 +385,18 @@ function recolor(fromColor, toColor, compDir, layoutFile) {
   const path = require("path");
   const absCompDir = path.join(target(), compDir);
   if (!fs.existsSync(absCompDir)) return;
-  const files = fs.readdirSync(absCompDir).filter((f) => f.endsWith(".tsx"));
-  for (const file of files) {
-    replaceInFile(path.join(compDir, file), \`\${fromColor}-\`, \`\${toColor}-\`);
+  // Walk all .tsx files (flat or in subdirectories)
+  function walkTsx(dir, rel) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const entryRel = rel ? \`\${rel}/\${entry.name}\` : entry.name;
+      if (entry.isDirectory()) {
+        walkTsx(path.join(dir, entry.name), entryRel);
+      } else if (entry.name.endsWith(".tsx")) {
+        replaceInFile(path.join(compDir, entryRel), \`\${fromColor}-\`, \`\${toColor}-\`);
+      }
+    }
   }
+  walkTsx(absCompDir, "");
   // Also recolor layout
   replaceInFile(layoutFile, \`\${fromColor}-\`, \`\${toColor}-\`);
 }
