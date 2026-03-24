@@ -12,7 +12,7 @@ const TOOL_ROOT = path.resolve(__dirname, "..");
 const LAUNCHKIT_VERSION = 1;
 
 // Supported locales — single source of truth. First entry is the default/fallback.
-const LOCALES = ["en", "pt"];
+const LOCALES = ["pt", "en"];
 const DEFAULT_LOCALE = LOCALES[0];
 
 // Dictionary file paths derived from LOCALES.

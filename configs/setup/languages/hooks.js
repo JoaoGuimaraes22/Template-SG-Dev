@@ -8,7 +8,7 @@ const path = require("path");
 const LOCALE_SETS = {
   "en":    { locales: ["en"],       defaultLocale: "en" },
   "pt":    { locales: ["pt"],       defaultLocale: "pt" },
-  "en+pt": { locales: ["en", "pt"], defaultLocale: "en" },
+  "en+pt": { locales: ["pt", "en"], defaultLocale: "pt" },
 };
 
 async function apply(ctx) {
